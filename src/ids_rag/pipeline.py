@@ -13,6 +13,8 @@ Executes Stage 6 and Stage 7 of the architecture:
   7. Emits structured outputs to artifacts/reports/flows/ (or custom --out-dir).
 """
 
+from __future__ import annotations
+
 import argparse
 import csv
 import json
@@ -224,90 +226,106 @@ class PipelineContext:
         )
 
 
-def run_pipeline(
-    index: int,
+def validate_raw_features(
+    raw_features: dict[str, Any] | "pd.Series",
+    feature_names: list[str],
+    scaler: Any,
+) -> np.ndarray:
+    """Validate raw (unscaled) feature input and return a scaled float32 array.
+
+    Args:
+        raw_features: Mapping of feature name to value (dict or pandas Series).
+            CSV headers are stripped of surrounding whitespace before lookup.
+        feature_names: Ordered list of expected feature names.
+        scaler: A fitted sklearn-compatible scaler with a ``transform`` method.
+
+    Returns:
+        1-D float32 numpy array of shape ``(len(feature_names),)`` after scaling.
+
+    Raises:
+        ValueError: If any feature is missing, non-numeric, NaN, or Inf.
+    """
+    # Normalise to dict; strip whitespace from string keys
+    if hasattr(raw_features, "to_dict"):
+        raw_dict: dict[str, Any] = raw_features.to_dict()
+    else:
+        raw_dict = dict(raw_features)
+    raw_dict = {str(k).strip(): v for k, v in raw_dict.items()}
+
+    # Check for missing features
+    missing = [fn for fn in feature_names if fn not in raw_dict]
+    if missing:
+        raise ValueError(
+            f"Missing required features: {missing}. "
+            f"Expected all of: {feature_names}"
+        )
+
+    # Convert to float; name any non-numeric feature
+    values: list[float] = []
+    for fn in feature_names:
+        try:
+            values.append(float(raw_dict[fn]))
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"Feature '{fn}' has a non-numeric value: {raw_dict[fn]!r}. "
+                "All features must be numeric."
+            )
+
+    arr = np.array(values, dtype=np.float64)
+
+    # Reject NaN or Inf (the training pipeline also dropped such rows)
+    if not np.all(np.isfinite(arr)):
+        bad = [feature_names[i] for i, v in enumerate(arr) if not np.isfinite(v)]
+        raise ValueError(
+            f"Features contain NaN or Inf values: {bad}. "
+            "The training pipeline dropped rows with NaN/Inf; "
+            "such values are not supported at inference time."
+        )
+
+    scaled = scaler.transform(arr.reshape(1, -1))[0]
+    return scaled.astype(np.float32)
+
+
+def _run_core(
+    x_scaled: np.ndarray,
+    meta_row: "pd.Series | dict[str, Any] | None",
     ctx: PipelineContext,
     cfg: dict[str, Any],
-    modes: list[str] | str = "rag",
+    index_or_id: "int | str",
+    mode_list: list[str],
+    ground_truth: str = "UNKNOWN",
     seed: int | None = None,
     generate: bool = True,
     client: Any = None,
-    out_dir: Path | str | None = None,
+    out_dir: "Path | str | None" = None,
     ollama_version: str | None = None,
 ) -> dict[str, Any]:
-    """Execute end-to-end inference and report generation for a single flow index.
+    """Internal shared core: predict → explain → retrieve → prompt → generate → validate → write.
 
     Args:
-        index: Row index in the test dataset.
+        x_scaled: 1-D float32 numpy array of already-scaled feature values.
+        meta_row: Optional flow metadata (pandas Series, dict, or None).
         ctx: Preloaded PipelineContext instance.
         cfg: System configuration dictionary.
-        modes: 'rag', 'vanilla', or 'both' (or list thereof).
+        index_or_id: Integer index or string identifier used in output filenames
+            and the ``"index"`` JSON key.
+        mode_list: Normalised list of generation modes, e.g. ``["rag"]``.
+        ground_truth: Ground-truth class string for console display only.
         seed: Optional random seed override for generation.
         generate: If False, stops after prompt construction (writes prompt files).
         client: Optional injected Ollama Client instance for testing.
-        out_dir: Directory for reports and JSON (default artifacts/reports/flows).
+        out_dir: Directory for reports and JSON.
         ollama_version: Recorded Ollama version string.
 
     Returns:
-        Dict containing all run metadata, explanation, query, chunks, prompts,
-        reports, validations, and timings.
-
-    Raises:
-        IndexError: If index is out of bounds for the test dataset.
-        ValueError: If an unrecognized mode is specified.
+        Summary dict containing all run metadata, explanation, query, chunks,
+        prompts, reports, validations, and timings.
     """
     t0_total = time.perf_counter()
 
-    # 1. Normalize modes
-    if isinstance(modes, str):
-        if modes == "both":
-            mode_list = ["rag", "vanilla"]
-        else:
-            mode_list = [modes]
-    else:
-        mode_list = list(modes)
-
-    for m in mode_list:
-        if m not in ("rag", "vanilla"):
-            raise ValueError(f"Invalid mode '{m}'. Allowed modes are 'rag', 'vanilla', or 'both'.")
-
-    # 2. Bounds check row index
-    total_rows = len(ctx.df_test)
-    if index < 0 or index >= total_rows:
-        raise IndexError(
-            f"Index {index} is out of range. Valid range is 0 to {total_rows - 1}."
-        )
-
-    # 3. Extract test row and flow metadata
-    row_series = ctx.df_test.iloc[index]
-    meta_series = (
-        ctx.df_meta.iloc[index]
-        if ctx.df_meta is not None and len(ctx.df_meta) > index
-        else None
-    )
-
-    # Ground truth label for evaluation display only (never passed to pipeline components)
-    ground_truth = "UNKNOWN"
-    if ctx.df_preds is not None and len(ctx.df_preds) > index:
-        preds_row = ctx.df_preds.iloc[index]
-        if "true_class" in preds_row:
-            ground_truth = str(preds_row["true_class"])
-        elif "true_label" in preds_row:
-            lbl = preds_row["true_label"]
-            ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
-    elif "label" in row_series:
-        lbl = row_series["label"]
-        ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
-    elif "Label" in row_series:
-        lbl = row_series["Label"]
-        ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
-
-    # Features tensor in canonical feature_names order
-    x_features = row_series[ctx.feature_names].to_numpy(dtype=np.float32)
-
     # 4. Ensemble prediction
     t0_ens = time.perf_counter()
-    pred_labels, confidences, tiers = ctx.ensemble.predict(x_features.reshape(1, -1))
+    pred_labels, confidences, tiers = ctx.ensemble.predict(x_scaled.reshape(1, -1))
     pred_label = int(pred_labels[0])
     confidence = float(confidences[0])
     tier = str(tiers[0])
@@ -323,11 +341,11 @@ def run_pipeline(
     top_k = int(explain_cfg.get("top_k", 5))
 
     explanation = explain_flow(
-        x_scaled=x_features,
+        x_scaled=x_scaled,
         ensemble=ctx.ensemble,
         k=top_k,
         scaler=ctx.scaler,
-        meta_row=meta_series,
+        meta_row=meta_row,
         feature_names=ctx.feature_names,
         method=method,
     )
@@ -406,7 +424,7 @@ def run_pipeline(
         )
 
     # 10. Console output
-    print(f"\nFlow Index: {index}")
+    print(f"\nFlow Index: {index_or_id}")
     print(f"Predicted class: {predicted_class}")
     print(f"Confidence: {confidence:.4f}")
     print(f"Tier: {tier}")
@@ -450,12 +468,12 @@ def run_pipeline(
 
     if generate:
         for m in mode_list:
-            report_file = flows_dir / f"flow_{index}_{m}.txt"
+            report_file = flows_dir / f"flow_{index_or_id}_{m}.txt"
             with open(report_file, "w", encoding="utf-8") as f:
                 f.write(reports_dict[m])
     else:
         for m in mode_list:
-            prompt_file = flows_dir / f"flow_{index}_{m}_prompt.txt"
+            prompt_file = flows_dir / f"flow_{index_or_id}_{m}_prompt.txt"
             p = prompts_dict[m]
             sep = "=" * 40
             with open(prompt_file, "w", encoding="utf-8") as f:
@@ -489,7 +507,7 @@ def run_pipeline(
         ollama_version = get_ollama_version()
 
     summary = {
-        "index": index,
+        "index": index_or_id,
         "ground_truth": ground_truth,
         "true_class": ground_truth,
         "predicted_class": predicted_class,
@@ -522,11 +540,180 @@ def run_pipeline(
         "ollama_version": ollama_version,
     }
 
-    json_file = flows_dir / f"flow_{index}.json"
+    json_file = flows_dir / f"flow_{index_or_id}.json"
     with open(json_file, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
 
     return summary
+
+
+def run_pipeline(
+    index: int,
+    ctx: PipelineContext,
+    cfg: dict[str, Any],
+    modes: list[str] | str = "rag",
+    seed: int | None = None,
+    generate: bool = True,
+    client: Any = None,
+    out_dir: Path | str | None = None,
+    ollama_version: str | None = None,
+) -> dict[str, Any]:
+    """Execute end-to-end inference and report generation for a single flow index.
+
+    Args:
+        index: Row index in the test dataset.
+        ctx: Preloaded PipelineContext instance.
+        cfg: System configuration dictionary.
+        modes: 'rag', 'vanilla', or 'both' (or list thereof).
+        seed: Optional random seed override for generation.
+        generate: If False, stops after prompt construction (writes prompt files).
+        client: Optional injected Ollama Client instance for testing.
+        out_dir: Directory for reports and JSON (default artifacts/reports/flows).
+        ollama_version: Recorded Ollama version string.
+
+    Returns:
+        Dict containing all run metadata, explanation, query, chunks, prompts,
+        reports, validations, and timings.
+
+    Raises:
+        IndexError: If index is out of bounds for the test dataset.
+        ValueError: If an unrecognized mode is specified.
+    """
+    # 1. Normalize modes
+    if isinstance(modes, str):
+        if modes == "both":
+            mode_list = ["rag", "vanilla"]
+        else:
+            mode_list = [modes]
+    else:
+        mode_list = list(modes)
+
+    for m in mode_list:
+        if m not in ("rag", "vanilla"):
+            raise ValueError(f"Invalid mode '{m}'. Allowed modes are 'rag', 'vanilla', or 'both'.")
+
+    # 2. Bounds check row index
+    total_rows = len(ctx.df_test)
+    if index < 0 or index >= total_rows:
+        raise IndexError(
+            f"Index {index} is out of range. Valid range is 0 to {total_rows - 1}."
+        )
+
+    # 3. Extract test row and flow metadata
+    row_series = ctx.df_test.iloc[index]
+    meta_series = (
+        ctx.df_meta.iloc[index]
+        if ctx.df_meta is not None and len(ctx.df_meta) > index
+        else None
+    )
+
+    # Ground truth label for evaluation display only (never passed to pipeline components)
+    ground_truth = "UNKNOWN"
+    if ctx.df_preds is not None and len(ctx.df_preds) > index:
+        preds_row = ctx.df_preds.iloc[index]
+        if "true_class" in preds_row:
+            ground_truth = str(preds_row["true_class"])
+        elif "true_label" in preds_row:
+            lbl = preds_row["true_label"]
+            ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
+    elif "label" in row_series:
+        lbl = row_series["label"]
+        ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
+    elif "Label" in row_series:
+        lbl = row_series["Label"]
+        ground_truth = ctx.ensemble.label_map.get(int(lbl), str(lbl))
+
+    # Features tensor in canonical feature_names order
+    x_features = row_series[ctx.feature_names].to_numpy(dtype=np.float32)
+
+    return _run_core(
+        x_scaled=x_features,
+        meta_row=meta_series,
+        ctx=ctx,
+        cfg=cfg,
+        index_or_id=index,
+        mode_list=mode_list,
+        ground_truth=ground_truth,
+        seed=seed,
+        generate=generate,
+        client=client,
+        out_dir=out_dir,
+        ollama_version=ollama_version,
+    )
+
+
+def run_flow(
+    raw_features: "dict[str, Any] | pd.Series",
+    ctx: PipelineContext,
+    cfg: dict[str, Any],
+    meta: "dict[str, Any] | None" = None,
+    flow_id: "int | str" = "custom",
+    modes: "list[str] | str" = "rag",
+    seed: int | None = None,
+    generate: bool = True,
+    client: Any = None,
+    out_dir: "Path | str | None" = None,
+    ollama_version: str | None = None,
+) -> dict[str, Any]:
+    """Accept raw (unscaled) feature values, validate, scale, and run the full pipeline.
+
+    This is the public entry point for callers that hold raw, unscaled feature
+    values (e.g. a CSV row before StandardScaler is applied). It validates the
+    input, applies ``ctx.scaler``, and then delegates to ``_run_core``.
+
+    Args:
+        raw_features: Mapping of feature name → value. Dict or pandas Series.
+            String keys are stripped of surrounding whitespace before lookup.
+            Extra columns are silently ignored.
+        ctx: Preloaded PipelineContext instance (must include a fitted scaler).
+        cfg: System configuration dictionary.
+        meta: Optional dict of flow metadata (IP addresses, ports, timestamp).
+            Passed verbatim to ``explain_flow`` as ``meta_row``.
+            Pass ``None`` to omit metadata; null fields appear in the prompt.
+        flow_id: Identifier used in output filenames and the ``"index"`` JSON key.
+        modes: 'rag', 'vanilla', or 'both' (or list thereof).
+        seed: Optional random seed override for generation.
+        generate: If False, stops after prompt construction (writes prompt files).
+        client: Optional injected Ollama Client instance for testing.
+        out_dir: Directory for reports and JSON.
+        ollama_version: Recorded Ollama version string.
+
+    Returns:
+        Summary dict identical in structure to the one returned by ``run_pipeline``.
+
+    Raises:
+        ValueError: If any feature is missing, non-numeric, NaN, or Inf.
+        ValueError: If an unrecognized mode is specified.
+    """
+    # Normalize modes first so we surface mode errors before touching features
+    if isinstance(modes, str):
+        if modes == "both":
+            mode_list = ["rag", "vanilla"]
+        else:
+            mode_list = [modes]
+    else:
+        mode_list = list(modes)
+
+    for m in mode_list:
+        if m not in ("rag", "vanilla"):
+            raise ValueError(f"Invalid mode '{m}'. Allowed modes are 'rag', 'vanilla', or 'both'.")
+
+    x_scaled = validate_raw_features(raw_features, ctx.feature_names, ctx.scaler)
+
+    return _run_core(
+        x_scaled=x_scaled,
+        meta_row=meta,
+        ctx=ctx,
+        cfg=cfg,
+        index_or_id=flow_id,
+        mode_list=mode_list,
+        ground_truth="UNKNOWN",
+        seed=seed,
+        generate=generate,
+        client=client,
+        out_dir=out_dir,
+        ollama_version=ollama_version,
+    )
 
 
 def main() -> None:
