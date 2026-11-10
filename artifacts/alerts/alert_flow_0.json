@@ -1,0 +1,151 @@
+{
+  "alert_version": 1,
+  "flow_index": 0,
+  "detected": {
+    "predicted_class": "DDoS",
+    "confidence": 0.9984560012817383,
+    "tier": "VERY_HIGH"
+  },
+  "flow_metadata": {
+    "Timestamp": "21/02/2018 02:11:32",
+    "Dst Port": 80,
+    "Flow ID": null,
+    "Src IP": null,
+    "Src Port": null,
+    "Dst IP": null,
+    "source_file": "Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv",
+    "protocol": 6,
+    "dataset": "CICIDS2018"
+  },
+  "top_features": [
+    {
+      "rank": 1,
+      "name": "Flow Pkts/s",
+      "original_value": 220.1189,
+      "direction": "lowers",
+      "importance": 10.727264,
+      "description": "Total packets transferred in both directions divided by flow duration in seconds.",
+      "implication": "Very high rates are consistent with packet flooding; very low rates with slow or stalled flows."
+    },
+    {
+      "rank": 2,
+      "name": "Flow IAT Mean",
+      "original_value": 9086.0,
+      "direction": "lowers",
+      "importance": 6.634216,
+      "description": "Mean inter-arrival time in microseconds between consecutive packets in both directions.",
+      "implication": "Very low mean IAT is consistent with rapid injection; very high with slow-rate traffic."
+    },
+    {
+      "rank": 3,
+      "name": "Init Fwd Win Byts",
+      "original_value": 32738.0,
+      "direction": "raises",
+      "importance": 6.450176,
+      "description": "Initial TCP window bytes in forward direction; typically -1 when unrecorded.",
+      "implication": "Anomalous or absent forward window values can flag scanning or attack tools."
+    },
+    {
+      "rank": 4,
+      "name": "Flow IAT Max",
+      "original_value": 9086.0,
+      "direction": "lowers",
+      "importance": 4.406807,
+      "description": "Maximum inter-arrival time in microseconds between consecutive packets in both directions.",
+      "implication": "Context dependent; read together with flow duration and mean IAT."
+    },
+    {
+      "rank": 5,
+      "name": "Tot Fwd Pkts",
+      "original_value": 2.0,
+      "direction": "raises",
+      "importance": 3.095155,
+      "description": "Total number of packets transmitted in the forward direction from source to destination.",
+      "implication": "High forward packet counts with few backward packets are consistent with one-sided flooding."
+    }
+  ],
+  "mitigation_report": {
+    "mode": "rag",
+    "word_count": 303,
+    "text": "**Structured Incident Response Report**\n\n**Rationale**\nThe detection of a DDoS attack is based on the analysis of network flow metadata and key anomalous indicators. The attack is classified as a DDoS attack, with a confidence level of 0.9985, indicating a high degree of certainty.\n\n**Key Indicators**\nThe top-5 features most influential in this decision are:\n\n* Feature 3: Init Fwd Win Byts = 32740 (moderately above the training average; effect on the DDoS score: raises)\n* Feature 5: Tot Fwd Pkts = 2 (near the training average; effect on the DDoS score: raises)\n\nThese indicators suggest an anomalous or absent forward window value, which can flag scanning or attack tools.\n\n**Confidence Assessment**\nThe confidence level of 0.9985 indicates a high degree of certainty that the detected traffic is a DDoS attack.\n\n**Threat Assessment**\nThe detected DDoS attack is a type of Network Denial of Service (DoS) attack, which is a sub-technique of T1498.001 [1]. This type of attack is characterized by the direct sending of a high-volume of network traffic to a target, which can reduce the availability and functionality of the targeted system(s) and network. The attack can be performed by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS).\n\n**Recommendations**\nBased on the analysis, the following recommendations are made:\n\n* Implement IP address spoofing and botnet detection mechanisms to identify and block malicious traffic.\n* Monitor network traffic and system resources to detect and respond to potential DoS attacks.\n* Implement rate limiting and traffic shaping to prevent excessive network traffic.\n* Conduct regular security audits and vulnerability assessments to identify and remediate potential vulnerabilities.\n\nBy implementing these recommendations, the organization can reduce the risk of successful DoS attacks and improve the overall security posture of its network and systems."
+  },
+  "sources": [
+    {
+      "number": 1,
+      "chunk_id": "9abd9022-6223-4f45-a3b9-817cb1890ff7",
+      "source": "MITRE_T1498_001.html",
+      "section": "Description",
+      "ce_score": 0.960155189037323
+    },
+    {
+      "number": 2,
+      "chunk_id": "91578269-f044-46f4-8438-39cc1fe61419",
+      "source": "MITRE_T1498.html",
+      "section": "Description",
+      "ce_score": 0.9168854355812073
+    },
+    {
+      "number": 3,
+      "chunk_id": "2fcc607b-b1bc-4693-b9a2-90aeab41eadf",
+      "source": "MITRE_T1498.html",
+      "section": "Procedure Examples",
+      "ce_score": 0.8050591349601746
+    },
+    {
+      "number": 4,
+      "chunk_id": "a1bd92f1-83cf-4fd8-a848-1fb58dbc79b2",
+      "source": "MITRE_T1499.html",
+      "section": "Description",
+      "ce_score": 0.7260122299194336
+    },
+    {
+      "number": 5,
+      "chunk_id": "0220d9f2-1432-4dcf-881f-181cff8ad4a8",
+      "source": "MITRE_T1498_001.html",
+      "section": "Description",
+      "ce_score": 0.5926945209503174
+    }
+  ],
+  "citations": [
+    {
+      "n": 1,
+      "sentence": "The detected DDoS attack is a type of Network Denial of Service (DoS) attack, which is a sub-technique of T1498.001 [1].",
+      "source": "MITRE_T1498_001.html",
+      "overlap": 0.778,
+      "out_of_range": false,
+      "flagged_unverified": false
+    }
+  ],
+  "checks": {
+    "features_named_in_report": [
+      "Init Fwd Win Byts",
+      "Tot Fwd Pkts"
+    ],
+    "features_not_named_in_report": [
+      "Flow Pkts/s",
+      "Flow IAT Mean",
+      "Flow IAT Max"
+    ],
+    "validation_flags": {
+      "invalid_citations": [],
+      "has_reference_list": false,
+      "unsupported_ips": [],
+      "attack_ids_not_in_kb": [],
+      "sp_not_in_kb": [],
+      "placeholder_citations": 0
+    }
+  },
+  "provenance": {
+    "model": "llama3:8b",
+    "seed_used": 42,
+    "ollama_version": null,
+    "chunks_sha256": "876e30b4f9e3c6943ccc5c584b631f2316d20e10d27e012151ba8ed44a006d15",
+    "overlap_threshold": 0.5
+  },
+  "warnings": [
+    "Draft generated by a local language model. Review before acting.",
+    "Generated from a stored evaluation flow, not live traffic.",
+    "Citation flags are a word-overlap heuristic, not a verdict.",
+    "Report names 2 of 5 top features."
+  ]
+}
