@@ -1,0 +1,517 @@
+{
+  "index": 60000,
+  "ground_truth": "DoS",
+  "true_class": "DoS",
+  "predicted_class": "DoS",
+  "confidence": 0.9999998807907104,
+  "tier": "VERY_HIGH",
+  "is_correct": true,
+  "explanation": {
+    "predicted_class": "DoS",
+    "predicted_label": 1,
+    "confidence": 1.0,
+    "tier": "VERY_HIGH",
+    "features": [
+      {
+        "name": "Tot Bwd Pkts",
+        "scaled_value": -0.0046,
+        "original_value": 4.0,
+        "importance": 27.284981,
+        "direction": "lowers",
+        "description": "Total number of packets transmitted in the backward direction from destination to source.",
+        "implication": "Near-zero backward packet count is consistent with unanswered DoS flooding traffic."
+      },
+      {
+        "name": "Fwd Pkt Len Mean",
+        "scaled_value": 0.9672,
+        "original_value": 96.6667,
+        "importance": 6.595689,
+        "direction": "raises",
+        "description": "Mean size in bytes of packets transmitted in the forward direction.",
+        "implication": "Low mean forward packet length is consistent with payload-free flooding traffic."
+      },
+      {
+        "name": "Fwd Seg Size Min",
+        "scaled_value": 1.387,
+        "original_value": 32.0,
+        "importance": 6.301932,
+        "direction": "raises",
+        "description": "Minimum forward segment size in bytes, reflecting smallest payload segment observed.",
+        "implication": "Minimum forward segment size; interpret together with payload length and rate."
+      },
+      {
+        "name": "Fwd Pkt Len Max",
+        "scaled_value": 0.5263,
+        "original_value": 290.0,
+        "importance": 4.493978,
+        "direction": "lowers",
+        "description": "Maximum size in bytes of a single packet observed in the forward direction.",
+        "implication": "Near-zero maximum forward packet size is consistent with header-only flooding."
+      },
+      {
+        "name": "PSH Flag Cnt",
+        "scaled_value": 1.0844,
+        "original_value": 1.0,
+        "importance": 3.729108,
+        "direction": "lowers",
+        "description": "Total count of packets with the TCP PSH flag set in both directions.",
+        "implication": "Few PSH flags despite many packets can indicate payload-free flooding traffic."
+      }
+    ],
+    "metadata": {
+      "Timestamp": "16/02/2018 01:45:30",
+      "Dst Port": 80,
+      "Flow ID": null,
+      "Src IP": null,
+      "Src Port": null,
+      "Dst IP": null,
+      "source_file": "Friday-16-02-2018_TrafficForML_CICFlowMeter.csv",
+      "protocol": 6,
+      "dataset": "CICIDS2018"
+    }
+  },
+  "query": "DoS (denial of service, resource exhaustion, flooding) | Protocol: TCP | Destination Port: 80 | Key indicators: Tot Bwd Pkts (lowers), Fwd Pkt Len Mean (raises), Fwd Seg Size Min (raises), Fwd Pkt Len Max (lowers), PSH Flag Cnt (lowers)",
+  "retrieval_query": "DoS (denial of service, resource exhaustion, flooding) | Protocol: TCP | Destination Port: 80 | Key indicators: Tot Bwd Pkts (lowers), Fwd Pkt Len Mean (raises), Fwd Seg Size Min (raises), Fwd Pkt Len Max (lowers), PSH Flag Cnt (lowers)",
+  "chunks": [
+    {
+      "chunk_id": "a1bd92f1-83cf-4fd8-a848-1fb58dbc79b2",
+      "source": "MITRE_T1499.html",
+      "section": "Description",
+      "bm25_rank": 1,
+      "dense_rank": 2,
+      "ce_score": 0.778885543346405,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "9abd9022-6223-4f45-a3b9-817cb1890ff7",
+      "source": "MITRE_T1498_001.html",
+      "section": "Description",
+      "bm25_rank": 2,
+      "dense_rank": 3,
+      "ce_score": 0.6489416360855103,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "91578269-f044-46f4-8438-39cc1fe61419",
+      "source": "MITRE_T1498.html",
+      "section": "Description",
+      "bm25_rank": 4,
+      "dense_rank": 1,
+      "ce_score": 0.5450752377510071,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "b8c5315e-cedd-4de9-a3c2-3e7e324de5b0",
+      "source": "NIST_SP_800-94.pdf",
+      "section": "5.3.3 Detection Capabilities",
+      "bm25_rank": 11,
+      "dense_rank": 12,
+      "ce_score": 0.14190584421157837,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "2fcc607b-b1bc-4693-b9a2-90aeab41eadf",
+      "source": "MITRE_T1498.html",
+      "section": "Procedure Examples",
+      "bm25_rank": 7,
+      "dense_rank": 9,
+      "ce_score": 0.12834656238555908,
+      "is_fallback": false
+    }
+  ],
+  "retrieved_chunks": [
+    {
+      "chunk_id": "a1bd92f1-83cf-4fd8-a848-1fb58dbc79b2",
+      "source": "MITRE_T1499.html",
+      "section": "Description",
+      "bm25_rank": 1,
+      "dense_rank": 2,
+      "ce_score": 0.778885543346405,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "9abd9022-6223-4f45-a3b9-817cb1890ff7",
+      "source": "MITRE_T1498_001.html",
+      "section": "Description",
+      "bm25_rank": 2,
+      "dense_rank": 3,
+      "ce_score": 0.6489416360855103,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "91578269-f044-46f4-8438-39cc1fe61419",
+      "source": "MITRE_T1498.html",
+      "section": "Description",
+      "bm25_rank": 4,
+      "dense_rank": 1,
+      "ce_score": 0.5450752377510071,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "b8c5315e-cedd-4de9-a3c2-3e7e324de5b0",
+      "source": "NIST_SP_800-94.pdf",
+      "section": "5.3.3 Detection Capabilities",
+      "bm25_rank": 11,
+      "dense_rank": 12,
+      "ce_score": 0.14190584421157837,
+      "is_fallback": false
+    },
+    {
+      "chunk_id": "2fcc607b-b1bc-4693-b9a2-90aeab41eadf",
+      "source": "MITRE_T1498.html",
+      "section": "Procedure Examples",
+      "bm25_rank": 7,
+      "dense_rank": 9,
+      "ce_score": 0.12834656238555908,
+      "is_fallback": false
+    }
+  ],
+  "prompts": {
+    "rag": {
+      "system": "You are a senior cybersecurity analyst. Generate a structured incident response report based on the evidence provided. Cite NIST Special Publications and MITRE ATT&CK techniques explicitly where applicable.",
+      "user": "[DETECTION CONTEXT]\n  Attack class: DoS\n  Confidence: 1.0000 (Very High: fully automated response)\n  Dataset: CICIDS2018\n\n[NETWORK FLOW METADATA]\n  Flow ID: not available\n  Timestamp: 16/02/2018 01:45:30\n  Source: not available\n  Destination: not available\n  Protocol: TCP (6)\n\n[KEY ANOMALOUS INDICATORS]\n  Top-5 features most influential in this decision (K = 5):\n  Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n     -> Low mean forward packet length is consistent with payload-free flooding traffic.\n  Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n     -> Minimum forward segment size; interpret together with payload length and rate.\n  Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n     -> Near-zero maximum forward packet size is consistent with header-only flooding.\n  Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n     -> Few PSH flags despite many packets can indicate payload-free flooding traffic.\n  Use a feature's meaning only when the observed value fits it; if a value is near the training average, say that it does not by itself indicate an attack.\n\n[RETRIEVED KNOWLEDGE CONTEXT]\n[1] MITRE ATT&CK T1499, section Description\nEndpoint Denial of Service Sub-techniques (4) ID Name T1499.001 OS Exhaustion Flood T1499.002 Service Exhaustion Flood T1499.003 Application Exhaustion Flood T1499.004 Application or System Exploitation Adversaries may perform Endpoint Denial of Service (DoS) attacks to degrade or block the availability of services to users. Endpoint DoS can be performed by exhausting the system resources those services are hosted on or exploiting the system to cause a persistent crash condition. Example services include websites, email services, DNS, and web-based applications. Adversaries have been observed conducting DoS attacks for political purposes and to support other malicious activities, including distraction , hacktivism, and extortion. An Endpoint DoS denies the availability of a service without saturating the network used to provide access to the service. Adversaries can target various layers of the application stack that is hosted on the system used to provide the service. These layers include the Operating Systems (OS), server applications such as web servers, DNS servers, databases, and the (typically web-based) applications that sit on top of them. Attacking each layer requires different techniques that take advantage of bottlenecks that are unique to the respective components. A DoS attack may be generated by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS). To perform DoS attacks against endpoint resources, several aspects apply to multiple methods, including IP address spoofing and botnets.\n\n[2] MITRE ATT&CK T1498.001, section Description\nNetwork Denial of Service: Direct Network Flood Other sub-techniques of Network Denial of Service (2) ID Name T1498.001 Direct Network Flood T1498.002 Reflection Amplification Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of network traffic to a target. This DoS attack may also reduce the availability and functionality of the targeted system(s) and network. Direct Network Flood s are when one or more systems are used to send a high-volume of network packets towards the targeted service's network. Almost any network protocol may be used for flooding. Stateless protocols such as UDP or ICMP are commonly used but stateful protocols such as TCP can be used as well. Botnets are commonly used to conduct network flooding attacks against networks and services. Large botnets can generate a significant amount of traffic from systems spread across the global Internet. Adversaries may have the resources to build out and control their own botnet infrastructure or may rent time on an existing botnet to conduct an attack. In some of the worst cases for distributed DoS (DDoS), so many systems are used to generate the flood that each one only needs to send out a small amount of traffic to produce enough volume to saturate the target network. In such circumstances, distinguishing DDoS traffic from legitimate clients becomes exceedingly difficult. Botnets have been used in some of the most high-profile DDoS flooding attacks, such as the 2012 series of incidents that targeted major US banks. ID: T1498.001 Sub-technique of: T1498 Tactic: Impact Platforms: IaaS, Linux, Windows, macOS\n\n[3] MITRE ATT&CK T1498, section Description\nNetwork Denial of Service Sub-techniques (2) ID Name T1498.001 Direct Network Flood T1498.002 Reflection Amplification Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability of targeted resources to users. Network DoS can be performed by exhausting the network bandwidth services rely on. Example resources include specific websites, email services, DNS, and web-based applications. Adversaries have been observed conducting network DoS attacks for political purposes and to support other malicious activities, including distraction , hacktivism, and extortion. A Network DoS will occur when the bandwidth capacity of the network connection to a system is exhausted due to the volume of malicious traffic directed at the resource or the network connections and network devices the resource relies on. For example, an adversary may send 10Gbps of traffic to a server that is hosted by a network with a 1Gbps connection to the internet. This traffic can be generated by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS). To perform Network DoS attacks several aspects apply to multiple methods, including IP address spoofing, and botnets. Adversaries may use the original IP address of an attacking system, or spoof the source IP address to make the attack traffic more difficult to trace back to the attacking system or to enable reflection. This can increase the difficulty defenders have in defending against the attack by reducing or eliminating the effectiveness of filtering by the source address on network defense devices. For DoS attacks targeting the hosting system directly, see Endpoint Denial of Service . ID: T1498\n\n[4] NIST SP 800-94, section 5.3.3 Detection Capabilities\nDoS attacks include logical attacks such as flooding, which involves sending large numbers of messages to an AP at a high rate, and physical attacks such as jamming, which involves emitting electromagnetic energy on the WLAN\u2019s frequencies to make the frequencies unusable by the WLAN. DoS attacks can often be detected through stateful protocol analysis and anomaly detection methods, which can determine if the observed activity is consistent with the expected activity. Many denial of service attacks are detected by counting events during periods of time and alerting when threshold values are exceeded. For example, a large number of events involving the termination of wireless network sessions can indicate a DoS attack. Impersonation and man-in-the-middle attacks. Some wireless IDPS sensors can detect when a device is attempting to spoof the identity of another device. This is done by identifying differences in the characteristics of the activity, such as certain values in frames. Most wireless IDPS sensors can identify the physical location of a detected threat by using triangulation\u2014estimating the threat\u2019s approximate distance from multiple sensors by the strength of the threat\u2019s signal received by each sensor, then calculating the physical location at which the threat would be the estimated distance from each sensor. This allows an organization to send physical security staff to the location to address the threat. Wireless IDPS products that can use building floor plans can also determine if the threat is inside or outside a building, or if it is in a public area or secured area. This information is helpful not only in finding and stopping the threat, but also in prioritizing the response to the threat. Wireless IDPS sensors can set the priority of alerts based in part on the location of each threat.\n\n[5] MITRE ATT&CK T1498, section Procedure Examples\nID Name Description G0007 APT28 In 2016, APT28 conducted a distributed denial of service (DDoS) attack against the World Anti-Doping Agency. S0532 Lucifer Lucifer can execute TCP, UDP, and HTTP denial of service (DoS) attacks. S1107 NKAbuse NKAbuse enables multiple types of network denial of service capabilities across several protocols post-installation.\n\nCite a source by writing its number in square brackets after the statement it supports. Cite only the numbers listed above, one number per bracket, never a range, and do not add a reference list at the end. Use a source only if it supports the statement. If no listed source supports a recommendation, say so instead of inventing a citation.\n\n[REPORT REQUEST]\n  Generate a structured report with sections:\n  1. Rationale\n  2. Key Indicators\n  3. Confidence Assessment\n  4. Threat Assessment\n  5. Recommendations\n  Write between 300 and 600 words in total, using the five section headings exactly as numbered above.",
+      "sources": [
+        {
+          "n": 1,
+          "source_name": "MITRE_T1499.html",
+          "source_ref": "T1499",
+          "section": "Description",
+          "chunk_id": "a1bd92f1-83cf-4fd8-a848-1fb58dbc79b2",
+          "is_fallback": false
+        },
+        {
+          "n": 2,
+          "source_name": "MITRE_T1498_001.html",
+          "source_ref": "T1498.001",
+          "section": "Description",
+          "chunk_id": "9abd9022-6223-4f45-a3b9-817cb1890ff7",
+          "is_fallback": false
+        },
+        {
+          "n": 3,
+          "source_name": "MITRE_T1498.html",
+          "source_ref": "T1498",
+          "section": "Description",
+          "chunk_id": "91578269-f044-46f4-8438-39cc1fe61419",
+          "is_fallback": false
+        },
+        {
+          "n": 4,
+          "source_name": "NIST_SP_800-94.pdf",
+          "source_ref": "SP 800-94",
+          "section": "5.3.3 Detection Capabilities",
+          "chunk_id": "b8c5315e-cedd-4de9-a3c2-3e7e324de5b0",
+          "is_fallback": false
+        },
+        {
+          "n": 5,
+          "source_name": "MITRE_T1498.html",
+          "source_ref": "T1498",
+          "section": "Procedure Examples",
+          "chunk_id": "2fcc607b-b1bc-4693-b9a2-90aeab41eadf",
+          "is_fallback": false
+        }
+      ],
+      "mode": "rag"
+    },
+    "vanilla": {
+      "system": "You are a senior cybersecurity analyst. Generate a structured incident response report based on the evidence provided. Cite NIST Special Publications and MITRE ATT&CK techniques explicitly where applicable.",
+      "user": "[DETECTION CONTEXT]\n  Attack class: DoS\n  Confidence: 1.0000 (Very High: fully automated response)\n  Dataset: CICIDS2018\n\n[NETWORK FLOW METADATA]\n  Flow ID: not available\n  Timestamp: 16/02/2018 01:45:30\n  Source: not available\n  Destination: not available\n  Protocol: TCP (6)\n\n[KEY ANOMALOUS INDICATORS]\n  Top-5 features most influential in this decision (K = 5):\n  Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n     -> Low mean forward packet length is consistent with payload-free flooding traffic.\n  Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n     -> Minimum forward segment size; interpret together with payload length and rate.\n  Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n     -> Near-zero maximum forward packet size is consistent with header-only flooding.\n  Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n     -> Few PSH flags despite many packets can indicate payload-free flooding traffic.\n  Use a feature's meaning only when the observed value fits it; if a value is near the training average, say that it does not by itself indicate an attack.\n\n[RETRIEVED KNOWLEDGE CONTEXT]\n\n[REPORT REQUEST]\n  Generate a structured report with sections:\n  1. Rationale\n  2. Key Indicators\n  3. Confidence Assessment\n  4. Threat Assessment\n  5. Recommendations\n  Write between 300 and 600 words in total, using the five section headings exactly as numbered above.",
+      "sources": [],
+      "mode": "vanilla"
+    }
+  },
+  "reports": {
+    "rag": "**Structured Incident Response Report**\n\n**1. Rationale**\n\nBased on the provided network flow metadata and key anomalous indicators, this report aims to investigate and respond to a suspected Denial of Service (DoS) attack. The attack is classified as a DoS attack, with a confidence level of 1.0000 (Very High: fully automated response). The dataset used is CICIDS2018.\n\n**2. Key Indicators**\n\nThe top-5 features most influential in this decision are:\n\n* Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n* Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n* Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n* Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n* Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n\nThese features suggest a potential DoS attack, with the majority of packets being forwarded with moderate packet lengths and segment sizes, and a low maximum forward packet size.\n\n**3. Confidence Assessment**\n\nThe confidence level for this incident is 1.0000 (Very High: fully automated response), indicating a high degree of certainty that the observed activity is a DoS attack.\n\n**4. Threat Assessment**\n\nBased on the MITRE ATT&CK techniques [1], this DoS attack is likely a Network Denial of Service (DoS) attack, specifically a Direct Network Flood [2]. The attack may be generated by a single system or multiple systems spread across the internet, commonly referred to as a distributed DoS (DDoS). The attack may also involve IP address spoofing and botnets.\n\n**5. Recommendations**\n\nTo respond to this incident, the following recommendations are made:\n\n* Implement network-based detection capabilities, such as stateful protocol analysis and anomaly detection methods [4], to detect and alert on DoS attacks.\n* Utilize IP address spoofing detection and botnet detection capabilities to identify and block the attack traffic.\n* Implement rate limiting and traffic shaping to prevent the attack traffic from overwhelming the network.\n* Monitor network traffic and system resources to detect and respond to potential DoS attacks.\n* Consider implementing a distributed denial of service (DDoS) mitigation solution to protect against large-scale attacks.\n\nBy following these recommendations, the organization can effectively respond to and mitigate the suspected DoS attack.",
+    "vanilla": "**Structured Incident Response Report**\n\n**1. Rationale**\n\nOn February 16, 2018, at 01:45:30, a potential Denial of Service (DoS) attack was detected. The detection was based on a combination of network flow metadata and key anomalous indicators. The attack class was classified as DoS, with a confidence level of 1.0000 (Very High: fully automated response).\n\n**2. Key Indicators**\n\nThe top-5 features most influential in this decision are:\n\n* Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n* Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n* Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n* Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n* Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n\nThese features suggest a potential DoS attack, with characteristics consistent with payload-free flooding traffic. The low mean forward packet length and minimum forward segment size indicate a high volume of packets with minimal payload, while the near-zero maximum forward packet size and few PSH flags suggest header-only flooding.\n\n**3. Confidence Assessment**\n\nThe confidence level for this detection is 1.0000 (Very High: fully automated response), indicating a high degree of certainty that the detected traffic is malicious. This confidence level is based on the combination of features and their relative influence on the DoS score.\n\n**4. Threat Assessment**\n\nBased on the detected indicators, the threat assessment is that a potential DoS attack is underway. The attack appears to be a type of flooding attack, with a high volume of packets being sent to overwhelm the targeted system. The use of payload-free flooding traffic and header-only flooding suggests a deliberate attempt to disrupt network services.\n\n**5. Recommendations**\n\nTo mitigate this potential DoS attack, the following recommendations are made:\n\n* Implement rate limiting and traffic shaping to reduce the volume of incoming traffic\n* Configure firewalls and intrusion detection systems to block suspicious traffic\n* Monitor network traffic and system performance to detect and respond to any further attacks\n* Conduct a thorough investigation to identify the source of the attack and take appropriate action to prevent future incidents\n\nBy following these recommendations, the organization can effectively respond to and mitigate the potential DoS attack, minimizing the impact on network services and ensuring the continued availability of critical systems.\n\nReferences:\n\n* NIST Special Publication 800-61, Guide to Incident Handling\n* MITRE ATT&CK, Techniques T1499 and T1501, Denial of Service"
+  },
+  "report_texts": {
+    "rag": "**Structured Incident Response Report**\n\n**1. Rationale**\n\nBased on the provided network flow metadata and key anomalous indicators, this report aims to investigate and respond to a suspected Denial of Service (DoS) attack. The attack is classified as a DoS attack, with a confidence level of 1.0000 (Very High: fully automated response). The dataset used is CICIDS2018.\n\n**2. Key Indicators**\n\nThe top-5 features most influential in this decision are:\n\n* Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n* Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n* Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n* Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n* Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n\nThese features suggest a potential DoS attack, with the majority of packets being forwarded with moderate packet lengths and segment sizes, and a low maximum forward packet size.\n\n**3. Confidence Assessment**\n\nThe confidence level for this incident is 1.0000 (Very High: fully automated response), indicating a high degree of certainty that the observed activity is a DoS attack.\n\n**4. Threat Assessment**\n\nBased on the MITRE ATT&CK techniques [1], this DoS attack is likely a Network Denial of Service (DoS) attack, specifically a Direct Network Flood [2]. The attack may be generated by a single system or multiple systems spread across the internet, commonly referred to as a distributed DoS (DDoS). The attack may also involve IP address spoofing and botnets.\n\n**5. Recommendations**\n\nTo respond to this incident, the following recommendations are made:\n\n* Implement network-based detection capabilities, such as stateful protocol analysis and anomaly detection methods [4], to detect and alert on DoS attacks.\n* Utilize IP address spoofing detection and botnet detection capabilities to identify and block the attack traffic.\n* Implement rate limiting and traffic shaping to prevent the attack traffic from overwhelming the network.\n* Monitor network traffic and system resources to detect and respond to potential DoS attacks.\n* Consider implementing a distributed denial of service (DDoS) mitigation solution to protect against large-scale attacks.\n\nBy following these recommendations, the organization can effectively respond to and mitigate the suspected DoS attack.",
+    "vanilla": "**Structured Incident Response Report**\n\n**1. Rationale**\n\nOn February 16, 2018, at 01:45:30, a potential Denial of Service (DoS) attack was detected. The detection was based on a combination of network flow metadata and key anomalous indicators. The attack class was classified as DoS, with a confidence level of 1.0000 (Very High: fully automated response).\n\n**2. Key Indicators**\n\nThe top-5 features most influential in this decision are:\n\n* Feature 1: Tot Bwd Pkts = 4 (near the training average; effect on the DoS score: lowers)\n* Feature 2: Fwd Pkt Len Mean = 96.67 (moderately above the training average; effect on the DoS score: raises)\n* Feature 3: Fwd Seg Size Min = 32 (moderately above the training average; effect on the DoS score: raises)\n* Feature 4: Fwd Pkt Len Max = 290 (moderately above the training average; effect on the DoS score: lowers)\n* Feature 5: PSH Flag Cnt = 1 (moderately above the training average; effect on the DoS score: lowers)\n\nThese features suggest a potential DoS attack, with characteristics consistent with payload-free flooding traffic. The low mean forward packet length and minimum forward segment size indicate a high volume of packets with minimal payload, while the near-zero maximum forward packet size and few PSH flags suggest header-only flooding.\n\n**3. Confidence Assessment**\n\nThe confidence level for this detection is 1.0000 (Very High: fully automated response), indicating a high degree of certainty that the detected traffic is malicious. This confidence level is based on the combination of features and their relative influence on the DoS score.\n\n**4. Threat Assessment**\n\nBased on the detected indicators, the threat assessment is that a potential DoS attack is underway. The attack appears to be a type of flooding attack, with a high volume of packets being sent to overwhelm the targeted system. The use of payload-free flooding traffic and header-only flooding suggests a deliberate attempt to disrupt network services.\n\n**5. Recommendations**\n\nTo mitigate this potential DoS attack, the following recommendations are made:\n\n* Implement rate limiting and traffic shaping to reduce the volume of incoming traffic\n* Configure firewalls and intrusion detection systems to block suspicious traffic\n* Monitor network traffic and system performance to detect and respond to any further attacks\n* Conduct a thorough investigation to identify the source of the attack and take appropriate action to prevent future incidents\n\nBy following these recommendations, the organization can effectively respond to and mitigate the potential DoS attack, minimizing the impact on network services and ensuring the continued availability of critical systems.\n\nReferences:\n\n* NIST Special Publication 800-61, Guide to Incident Handling\n* MITRE ATT&CK, Techniques T1499 and T1501, Denial of Service"
+  },
+  "validation": {
+    "rag": {
+      "word_count": 399,
+      "headings_found": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any_count": 5,
+      "words_in_range": true,
+      "cited": [
+        1,
+        2,
+        4
+      ],
+      "cited_in_copied_headers": [],
+      "copied_source_headers": 0,
+      "invalid_citations": [],
+      "citations_in_vanilla": [],
+      "unsupported_ips": [],
+      "placeholder_citations": 0,
+      "citation_ranges": [],
+      "has_reference_list": false,
+      "attack_ids_not_in_kb": [],
+      "kb_attack_ids_named": [],
+      "sp_not_in_kb": [],
+      "kb_sp_named": []
+    },
+    "vanilla": {
+      "word_count": 439,
+      "headings_found": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any_count": 5,
+      "words_in_range": true,
+      "cited": [],
+      "cited_in_copied_headers": [],
+      "copied_source_headers": 0,
+      "invalid_citations": [],
+      "citations_in_vanilla": [],
+      "unsupported_ips": [],
+      "placeholder_citations": 0,
+      "citation_ranges": [],
+      "has_reference_list": true,
+      "attack_ids_not_in_kb": [
+        "T1501"
+      ],
+      "kb_attack_ids_named": [
+        "T1499"
+      ],
+      "sp_not_in_kb": [],
+      "kb_sp_named": [
+        "800-61"
+      ]
+    }
+  },
+  "validation_dicts": {
+    "rag": {
+      "word_count": 399,
+      "headings_found": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any_count": 5,
+      "words_in_range": true,
+      "cited": [
+        1,
+        2,
+        4
+      ],
+      "cited_in_copied_headers": [],
+      "copied_source_headers": 0,
+      "invalid_citations": [],
+      "citations_in_vanilla": [],
+      "unsupported_ips": [],
+      "placeholder_citations": 0,
+      "citation_ranges": [],
+      "has_reference_list": false,
+      "attack_ids_not_in_kb": [],
+      "kb_attack_ids_named": [],
+      "sp_not_in_kb": [],
+      "kb_sp_named": []
+    },
+    "vanilla": {
+      "word_count": 439,
+      "headings_found": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any": {
+        "Rationale": true,
+        "Key Indicators": true,
+        "Confidence Assessment": true,
+        "Threat Assessment": true,
+        "Recommendations": true
+      },
+      "headings_any_count": 5,
+      "words_in_range": true,
+      "cited": [],
+      "cited_in_copied_headers": [],
+      "copied_source_headers": 0,
+      "invalid_citations": [],
+      "citations_in_vanilla": [],
+      "unsupported_ips": [],
+      "placeholder_citations": 0,
+      "citation_ranges": [],
+      "has_reference_list": true,
+      "attack_ids_not_in_kb": [
+        "T1501"
+      ],
+      "kb_attack_ids_named": [
+        "T1499"
+      ],
+      "sp_not_in_kb": [],
+      "kb_sp_named": [
+        "800-61"
+      ]
+    }
+  },
+  "model": "llama3:8b",
+  "ollama_model": "llama3:8b",
+  "options": {
+    "temperature": 0.2,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 1100
+  },
+  "options_used": {
+    "temperature": 0.2,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 1100
+  },
+  "seed_used": 42,
+  "timings": {
+    "ensemble": 0.0007,
+    "explain": 0.0016,
+    "retrieve": 1.2481,
+    "prompt": 0.0006,
+    "generate": 29.8021,
+    "validate": 0.0011,
+    "total": 31.0555
+  },
+  "config": {
+    "llm": {
+      "model": "llama3:8b",
+      "host": "http://localhost:11434",
+      "temperature": 0.2,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 1100,
+      "keep_alive": "15m",
+      "request_timeout_s": 600,
+      "min_words": 300,
+      "max_words": 600,
+      "suppress_near_average_implications": true,
+      "tier_actions": {
+        "VERY_HIGH": "Very High: fully automated response",
+        "HIGH": "High: analyst review within 15 minutes",
+        "MEDIUM": "Medium: analyst review within 1 hour",
+        "LOW": "Low: manual deep inspection"
+      },
+      "z_near": 0.5,
+      "z_far": 1.5
+    },
+    "rag": {
+      "embed_model": "sentence-transformers/all-mpnet-base-v2",
+      "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "index_dir": "data/kb/index",
+      "embed_batch_size": 32,
+      "embed_device": "auto",
+      "chunk_min_tokens": 200,
+      "chunk_max_tokens": 350,
+      "chunk_overlap": 200,
+      "retrieve_k_each": 30,
+      "rrf_k": 60,
+      "fusion_top": 30,
+      "fallback_min_chunks": 3,
+      "fallback_score_threshold": 0.5,
+      "fallback_sections": [
+        {
+          "source": "NIST_SP_800-61_Rev2.pdf",
+          "section": "Executive Summary"
+        },
+        {
+          "source": "NIST_SP_800-61_Rev2.pdf",
+          "section": "3.6 Recommendations"
+        }
+      ],
+      "final_k": 5,
+      "fusion_weights": {
+        "semantic": 0.6,
+        "bm25": 0.4
+      },
+      "bm25_k1": 1.5,
+      "bm25_b": 0.75
+    }
+  },
+  "llm_config": {
+    "model": "llama3:8b",
+    "host": "http://localhost:11434",
+    "temperature": 0.2,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 1100,
+    "keep_alive": "15m",
+    "request_timeout_s": 600,
+    "min_words": 300,
+    "max_words": 600,
+    "suppress_near_average_implications": true,
+    "tier_actions": {
+      "VERY_HIGH": "Very High: fully automated response",
+      "HIGH": "High: analyst review within 15 minutes",
+      "MEDIUM": "Medium: analyst review within 1 hour",
+      "LOW": "Low: manual deep inspection"
+    },
+    "z_near": 0.5,
+    "z_far": 1.5
+  },
+  "rag_config": {
+    "embed_model": "sentence-transformers/all-mpnet-base-v2",
+    "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "index_dir": "data/kb/index",
+    "embed_batch_size": 32,
+    "embed_device": "auto",
+    "chunk_min_tokens": 200,
+    "chunk_max_tokens": 350,
+    "chunk_overlap": 200,
+    "retrieve_k_each": 30,
+    "rrf_k": 60,
+    "fusion_top": 30,
+    "fallback_min_chunks": 3,
+    "fallback_score_threshold": 0.5,
+    "fallback_sections": [
+      {
+        "source": "NIST_SP_800-61_Rev2.pdf",
+        "section": "Executive Summary"
+      },
+      {
+        "source": "NIST_SP_800-61_Rev2.pdf",
+        "section": "3.6 Recommendations"
+      }
+    ],
+    "final_k": 5,
+    "fusion_weights": {
+      "semantic": 0.6,
+      "bm25": 0.4
+    },
+    "bm25_k1": 1.5,
+    "bm25_b": 0.75
+  },
+  "chunks_sha256": "876e30b4f9e3c6943ccc5c584b631f2316d20e10d27e012151ba8ed44a006d15"
+}

@@ -1,0 +1,80 @@
+{
+  "classification_report": {
+    "Benign": {
+      "precision": 0.9994872823736597,
+      "recall": 0.9963555555555555,
+      "f1-score": 0.9979189619292447,
+      "support": 45000.0
+    },
+    "DoS": {
+      "precision": 0.9985418786029162,
+      "recall": 0.9997623412779248,
+      "f1-score": 0.9991517372421281,
+      "support": 29454.0
+    },
+    "DDoS": {
+      "precision": 0.9973173705797583,
+      "recall": 0.9996444444444444,
+      "f1-score": 0.9984795516342045,
+      "support": 45000.0
+    },
+    "accuracy": 0.9984345438411438,
+    "macro avg": {
+      "precision": 0.9984488438521114,
+      "recall": 0.9985874470926416,
+      "f1-score": 0.9985167502685258,
+      "support": 119454.0
+    },
+    "weighted avg": {
+      "precision": 0.9984367361099176,
+      "recall": 0.9984345438411438,
+      "f1-score": 0.9984341117006117,
+      "support": 119454.0
+    }
+  },
+  "roc_aucs": {
+    "Benign": 0.999935583939972,
+    "DoS": 0.9999796011483066,
+    "DDoS": 0.9999496652668465
+  },
+  "benign_fpr_analysis": {
+    "total_benign": 45000,
+    "false_positives": 164,
+    "false_positive_rate": 0.0036444444444444445
+  },
+  "confidence_analysis": {
+    "tiers": {
+      "VERY_HIGH": {
+        "count": 118993,
+        "percentage": 99.61,
+        "accuracy": 0.9987
+      },
+      "HIGH": {
+        "count": 441,
+        "percentage": 0.37,
+        "accuracy": 0.9478
+      },
+      "MEDIUM": {
+        "count": 13,
+        "percentage": 0.01,
+        "accuracy": 0.5385
+      },
+      "LOW": {
+        "count": 7,
+        "percentage": 0.01,
+        "accuracy": 0.4286
+      }
+    },
+    "mean_confidence_correct": 0.9991818434388915,
+    "mean_confidence_incorrect": 0.9432035282971387
+  },
+  "calibration": {
+    "ece_raw_main": 0.001071455794097028,
+    "ece_temperature_scaled": 0.0007526797689684599,
+    "fitted_temperatures": {
+      "Benign": 0.8506,
+      "DoS": 1.4076,
+      "DDoS": 1.1101
+    }
+  }
+}

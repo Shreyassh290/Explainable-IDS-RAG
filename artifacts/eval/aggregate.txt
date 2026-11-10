@@ -1,0 +1,28 @@
+rows: 60 | flows: 30 | correct flows: 30
+================================================================
+MODE rag | reports: 30
+  words min/mean/max: 214 353.5 415
+  in 300-600: 29/30 (97%) | in 400-500: 4/30 (13%)
+  all 5 numbered headings: 25/30 (83%) | all 5 in any form: 30/30 (100%)
+  >=1 inline citation: 26/30 (87%) | mean distinct citations: 2.23
+  range citations: 2/30 (7%) | copied source headers: 2/30 (7%)
+  attack id not in KB: 0/30 (0%) | KB attack id named: 9/30 (30%) | SP not in KB: 0/30 (0%)
+  names NIST in text: 2/30 (7%) | names MITRE/ATT&CK/technique id in text: 13/30 (43%)
+  reports citing a NIST source: 13/30 (43%) | citing a MITRE source: 20/30 (67%)
+  Benign: n=10 words mean=320 with citation=6
+  DoS: n=10 words mean=393 with citation=10
+  DDoS: n=10 words mean=347 with citation=10
+================================================================
+MODE vanilla | reports: 30
+  words min/mean/max: 294 384.3 488
+  in 300-600: 29/30 (97%) | in 400-500: 11/30 (37%)
+  all 5 numbered headings: 30/30 (100%) | all 5 in any form: 30/30 (100%)
+  >=1 inline citation: 0/30 (0%) | mean distinct citations: 0
+  range citations: 0/30 (0%) | copied source headers: 0/30 (0%)
+  attack id not in KB: 13/30 (43%) | KB attack id named: 2/30 (7%) | SP not in KB: 0/30 (0%)
+  names NIST in text: 25/30 (83%) | names MITRE/ATT&CK/technique id in text: 24/30 (80%)
+  Benign: n=10 words mean=356 with citation=0
+  DoS: n=10 words mean=394 with citation=0
+  DDoS: n=10 words mean=403 with citation=0
+================================================================
+distinct top-5 chunk sets per predicted class (10 flows each): {'Benign': 5, 'DoS': 2, 'DDoS': 2}

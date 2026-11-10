@@ -1,0 +1,19 @@
+============================================================
+MITRE_T1498.html | old chunks 5 | new chunks 5
+  same section sequence: True | old sections 4 | new sections 4
+  HTML identical (section and text): True
+============================================================
+MITRE_T1498_001.html | old chunks 4 | new chunks 4
+  same section sequence: True | old sections 3 | new sections 3
+  HTML identical (section and text): True
+============================================================
+MITRE_T1499.html | old chunks 7 | new chunks 7
+  same section sequence: True | old sections 4 | new sections 4
+  HTML identical (section and text): True
+============================================================
+NIST_SP_800-61_Rev2.pdf | old chunks 201 | new chunks 201
+  same section sequence: True | old sections 55 | new sections 55
+  words that lost occurrences (top 40): [('data', 5), ('is', 4), ('should', 3), ('Information', 3), ('vulnerabilities.32', 3), ('logging.34', 3), ('port', 3), ('document.50', 3), ('only', 2), ('necessary', 2), ('The', 2), ('a', 2), ('Federal', 2), ('packet', 2), ('at', 2), ('before', 2), ('disclosure.7', 2), ('some', 2), ('available', 2), ('state', 2), ('website.9', 2), ('Education.10', 2), ('document.16', 2), ('capture', 2), ('guidelines.24', 2), ('vulnerabilities.25', 2), ('resources.26', 2), ('monitored.27', 2), ('effectively.29', 2), ('volume', 2), ('sources.31', 2), ('hosts.35', 2), ('sniffer', 2), ('evidence.39', 2), ('information.40', 2), ('follow-up', 2), ('Records', 2), ('collecting', 2), ('scans', 2), ('Handled.46', 2)]
+  words that gained occurrences (top 25): [('to', 18), ('and', 12), ('incidents', 9), ('of', 7), ('for', 7), ('as', 7), ('such', 6), ('vulnerabilities.', 6), ('in', 5), ('organization', 5), ('–', 5), ('document.', 5), ('can', 4), ('with', 4), ('organizations', 4), ('agencies', 4), ('are', 4), ('incident', 3), ('more', 3), ('also', 3), ('each', 3), ('effectively.', 3), ('report', 3), ('contact', 3), ('US-CERT', 3)]
+NEW DOCUMENT: NIST_SP_800-30_Rev1.pdf chunks 183
+NEW DOCUMENT: NIST_SP_800-94.pdf chunks 343

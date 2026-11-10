@@ -1,0 +1,38 @@
+You are a senior cybersecurity analyst. Generate a structured incident response report based on the evidence provided. Cite NIST Special Publications and MITRE ATT&CK techniques explicitly where applicable.
+========================================
+[DETECTION CONTEXT]
+  Attack class: DDoS
+  Confidence: 0.9985 (Very High: fully automated response)
+  Dataset: CICIDS2018
+
+[NETWORK FLOW METADATA]
+  Flow ID: not available
+  Timestamp: 21/02/2018 02:11:32
+  Source: not available
+  Destination: not available
+  Protocol: TCP (6)
+
+[KEY ANOMALOUS INDICATORS]
+  Top-5 features most influential in this decision (K = 5):
+  Feature 1: Flow Pkts/s = 220.1 (near the training average; effect on the DDoS score: lowers)
+     -> This value is near the training average, so it does not by itself indicate an attack.
+  Feature 2: Flow IAT Mean = 9086 (near the training average; effect on the DDoS score: lowers)
+     -> This value is near the training average, so it does not by itself indicate an attack.
+  Feature 3: Init Fwd Win Byts = 32740 (moderately above the training average; effect on the DDoS score: raises)
+     -> Anomalous or absent forward window values can flag scanning or attack tools.
+  Feature 4: Flow IAT Max = 9086 (near the training average; effect on the DDoS score: lowers)
+     -> This value is near the training average, so it does not by itself indicate an attack.
+  Feature 5: Tot Fwd Pkts = 2 (near the training average; effect on the DDoS score: raises)
+     -> This value is near the training average, so it does not by itself indicate an attack.
+  Use a feature's meaning only when the observed value fits it; if a value is near the training average, say that it does not by itself indicate an attack.
+
+[RETRIEVED KNOWLEDGE CONTEXT]
+
+[REPORT REQUEST]
+  Generate a structured report with sections:
+  1. Rationale
+  2. Key Indicators
+  3. Confidence Assessment
+  4. Threat Assessment
+  5. Recommendations
+  Write between 300 and 600 words in total, using the five section headings exactly as numbered above.

@@ -1,0 +1,41 @@
+AUDIT RUBRIC v2 (frozen before scoring)
+
+Scope: 10 RAG reports (3 Benign, 4 DoS, 3 DDoS), chosen with seed 42.
+Each row is one judgment. Fill only the judgment column (and notes if needed).
+
+CITATION rows (kind = citation)
+Read the sentence, then the FULL chunk text in the same row.
+  yes      The chunk states what the knowledge-base part of the sentence claims.
+  partial  The chunk supports part of the claim, or only the general principle
+           while the flow-specific part (feature values, confidence, class)
+           comes from the prompt and not from the chunk.
+  no       The chunk supports none of the claim (sharing a topic is not
+           support), or the cited number is outside the retrieved list
+           (source_or_name starts with NO SUCH CHUNK).
+A citation written as a list or range (form = list or range) gets one row per
+number. Judge each number against its own chunk.
+
+ATTACK ID rows (kind = attack_id)
+  correct  The id exists and the technique the sentence attaches it to matches
+           the technique name in source_or_name.
+  wrong    Anything else: the id names a different technique than the sentence
+           says, or the id is invented.
+If source_or_name says NOT IN KB LIST, look the id up on attack.mitre.org,
+judge correct or wrong on the official name, and write "not in KB" in notes.
+Judge against the MITRE pages in the knowledge base, not from memory.
+
+Rules
+- Score all rows of one flow code together, then move to the next.
+- Decide from the text in the row. Do not open audit_key_v2.csv until every
+  row is scored.
+- Do not edit a judgment after seeing any results. If you change your mind
+  about a rule, write it in notes and tell the project lead. Do not re-score
+  silently.
+- Allowed values: yes, partial, no, correct, wrong. Leave a row blank only if
+  you cannot judge it, and say why in notes.
+
+CLARIFICATION (added before any scoring): the judged unit is the text in the sentence column. full_line is context only and must not be used to extend a citation to other sentences.
+
+
+NOTE (added before any scoring): chunk_text on the sheet is the raw knowledge-base text. The model saw it after cleaning: bracketed numbers such as [1] inside chunk_text are MITRE's own reference footnotes, which were removed in the prompt, and bullet glyphs appeared as '- '. These markers are not report citations. Judge the chunk as if they were absent.
+

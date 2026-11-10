@@ -1,0 +1,38 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This report is generated in response to a detected Denial of Service (DoS) attack on February 16, 2018, at 01:45:29. The attack was detected using the CICIDS2018 dataset, and the confidence level is 1.0000, indicating a Very High level of confidence. The attack is classified as a DoS attack, which is a type of attack that aims to make a system or network resource unavailable by overwhelming it with traffic.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of this attack are:
+
+* Elevated ACK flag count (Feature 1): The ACK flag count is moderately above the training average, indicating established connections under high-rate interaction.
+* Absence of forward window values (Feature 3): The absence of forward window values can flag scanning or attack tools.
+* Low PSH flag count (Feature 4): The low PSH flag count despite many packets can indicate payload-free flooding traffic.
+
+These indicators are consistent with the MITRE ATT&CK technique T1499.001: "TCP SYN Flood" [1], which is a type of DoS attack that uses SYN packets to flood a target system.
+
+**3. Confidence Assessment**
+
+The confidence level for this detection is 1.0000, indicating a Very High level of confidence. This is based on the combination of the elevated ACK flag count, absence of forward window values, and low PSH flag count, which are all indicative of a DoS attack.
+
+**4. Threat Assessment**
+
+The threat posed by this attack is significant, as it can cause a system or network resource to become unavailable, resulting in loss of productivity, revenue, and reputation. The attack is also likely to be persistent, as it can continue to flood the target system with traffic until it is manually stopped or the system is restarted.
+
+**5. Recommendations**
+
+To mitigate this attack, the following recommendations are made:
+
+* Implement rate limiting and traffic shaping to prevent excessive traffic from reaching the target system.
+* Use intrusion detection and prevention systems (IDPS) to detect and block suspicious traffic.
+* Implement a network segmentation strategy to isolate the target system and prevent the attack from spreading.
+* Conduct regular security monitoring and incident response training to ensure that the attack is detected and responded to promptly.
+
+References:
+
+[1] MITRE Corporation. (n.d.). ATT&CK: TCP SYN Flood. Retrieved from <https://attack.mitre.org/techniques/T1499.001/>
+
+Note: The report is structured according to the NIST Special Publication 800-61, Guide to Incident Handling, and the MITRE ATT&CK framework.

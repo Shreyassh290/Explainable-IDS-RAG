@@ -1,0 +1,28 @@
+**Structured Incident Response Report**
+
+**Rationale**
+The detection of a DDoS attack is based on the analysis of network flow metadata and key anomalous indicators. The attack is classified as a DDoS attack, with a confidence level of 0.9985, indicating a high degree of certainty.
+
+**Key Indicators**
+The top-5 features most influential in this decision are:
+
+* Feature 3: Init Fwd Win Byts = 32740 (moderately above the training average; effect on the DDoS score: raises)
+* Feature 5: Tot Fwd Pkts = 2 (near the training average; effect on the DDoS score: raises)
+
+These indicators suggest an anomalous or absent forward window value, which can flag scanning or attack tools.
+
+**Confidence Assessment**
+The confidence level of 0.9985 indicates a high degree of certainty that the detected traffic is a DDoS attack.
+
+**Threat Assessment**
+The detected DDoS attack is a type of Network Denial of Service (DoS) attack, which is a sub-technique of T1498.001 [1]. This type of attack is characterized by the direct sending of a high-volume of network traffic to a target, which can reduce the availability and functionality of the targeted system(s) and network. The attack can be performed by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS).
+
+**Recommendations**
+Based on the analysis, the following recommendations are made:
+
+* Implement IP address spoofing and botnet detection mechanisms to identify and block malicious traffic.
+* Monitor network traffic and system resources to detect and respond to potential DoS attacks.
+* Implement rate limiting and traffic shaping to prevent excessive network traffic.
+* Conduct regular security audits and vulnerability assessments to identify and remediate potential vulnerabilities.
+
+By implementing these recommendations, the organization can reduce the risk of successful DoS attacks and improve the overall security posture of its network and systems.

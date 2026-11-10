@@ -1,0 +1,38 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+Based on the detection context, network flow metadata, and key anomalous indicators, this report aims to provide a structured incident response to a suspected DoS attack. The attack is classified as a DoS attack, with a confidence level of 1.0000 (Very High: fully automated response). The dataset used is CICIDS2018.
+
+**2. Key Indicators**
+
+The top-5 features most influential in this decision are:
+
+* Feature 1: Tot Bwd Pkts = 1 (near the training average; effect on the DoS score: lowers)
+* Feature 2: ACK Flag Cnt = 1 (moderately above the training average; effect on the DoS score: raises)
+* Feature 3: Pkt Len Var = 21.33 (moderately below the training average; effect on the DoS score: raises)
+* Feature 4: Flow IAT Std = 2612000 (near the training average; effect on the DoS score: raises)
+* Feature 5: PSH Flag Cnt = 0 (moderately below the training average; effect on the DoS score: lowers)
+
+These indicators suggest a potential DoS attack, with elevated ACK counts and low packet length variance consistent with uniform flooding packets.
+
+**3. Confidence Assessment**
+
+The confidence level for this incident is 1.0000 (Very High: fully automated response), indicating a high degree of certainty that the detected activity is a DoS attack.
+
+**4. Threat Assessment**
+
+Based on the MITRE ATT&CK techniques [2][3], this DoS attack is likely a direct network flood, where one or more systems are used to send a high-volume of network traffic to a target. The attack may also reduce the availability and functionality of the targeted system(s) and network.
+
+**5. Recommendations**
+
+To mitigate this threat, the following recommendations are made:
+
+* Implement network-based intrusion detection systems (NIDS) and intrusion prevention systems (IPS) to detect and prevent DoS attacks [4].
+* Use stateful protocol analysis and anomaly detection methods to detect DoS attacks [4].
+* Implement rate limiting and traffic shaping to prevent excessive network traffic [1].
+* Monitor network traffic for suspicious activity and alert on threshold values being exceeded [1].
+* Implement IP address spoofing detection to prevent attackers from hiding their true IP address [2][3].
+* Use botnet detection tools to identify and block malicious traffic [2][3].
+
+By implementing these recommendations, the organization can effectively mitigate the threat of DoS attacks and ensure the availability and functionality of its network and systems.

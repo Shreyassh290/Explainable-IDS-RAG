@@ -1,0 +1,38 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This incident response report is generated in response to a detected Distributed Denial of Service (DDoS) attack on the network. The attack was detected using the CICIDS2018 dataset, which is a widely recognized benchmark for evaluating the effectiveness of intrusion detection systems. The detection was made with a confidence level of 1.0000, indicating a high degree of certainty that the observed network traffic is malicious.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of this DDoS attack are:
+
+* The flow ID indicates a connection between the source IP address 18.216.200.189 and the destination IP address 172.31.69.25 on port 80.
+* The timestamp of the incident is 20/02/2018 11:01:10.
+* The protocol used is TCP (6).
+* The top-5 features most influential in this decision are:
+	+ Init Fwd Win Byts = 8192, which is near the training average and does not by itself indicate an attack.
+	+ Tot Fwd Pkts = 3, which is near the training average and does not by itself indicate an attack.
+	+ Flow Pkts/s = 6.271, which is near the training average and does not by itself indicate an attack.
+	+ Flow IAT Std = 454500, which is near the training average and does not by itself indicate an attack.
+	+ Tot Bwd Pkts = 4, which is near the training average and does not by itself indicate an attack.
+
+**3. Confidence Assessment**
+
+The confidence level of this detection is 1.0000, indicating a high degree of certainty that the observed network traffic is malicious. This confidence level is based on the combination of the features mentioned above, which collectively indicate a DDoS attack.
+
+**4. Threat Assessment**
+
+The threat posed by this DDoS attack is significant, as it can cause network congestion, slow down network performance, and potentially disrupt critical services. According to NIST Special Publication 800-61, DDoS attacks can have a significant impact on an organization's ability to conduct business, and can also compromise the confidentiality, integrity, and availability of sensitive information.
+
+**5. Recommendations**
+
+Based on the evidence presented, the following recommendations are made:
+
+* Implement a DDoS mitigation strategy, such as a cloud-based DDoS protection service or a on-premises DDoS mitigation appliance.
+* Conduct a thorough network segmentation and isolation to prevent the spread of the attack.
+* Monitor network traffic and system logs for suspicious activity and implement incident response procedures to quickly respond to and contain the attack.
+* Conduct a post-incident analysis to identify the root cause of the attack and implement measures to prevent similar attacks in the future.
+
+This report is generated in accordance with the guidelines outlined in NIST Special Publication 800-61, "Guide to Incident Response."

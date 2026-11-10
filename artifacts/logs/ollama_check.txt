@@ -1,0 +1,3 @@
+Ollama connection verified. Installed models:
+  - llama3:8b
+  - qwen3:8b

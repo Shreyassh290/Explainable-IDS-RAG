@@ -1,0 +1,75 @@
+[ 1] hits=4 P@5=0.80 (max 1.00) secRecall=0.80 RR=1.00 | denial of service flood attack
+       +MITRE_T1498_001|Description ; +MITRE_T1499|Description ; +MITRE_T1498|Description ; +MITRE_T1499|Procedure Examples ; -NIST_SP_800-94|5.3.3 Detection Capabilities
+[ 2] hits=4 P@5=0.80 (max 1.00) secRecall=0.60 RR=1.00 | T1498 network denial of service
+       +MITRE_T1498|Detection Strategy ; +MITRE_T1498|Description ; +MITRE_T1498_001|Description ; -MITRE_T1499|Description ; +MITRE_T1498|Description
+[ 3] hits=4 P@5=0.80 (max 1.00) secRecall=1.00 RR=1.00 | direct network flood using a botnet
+       +MITRE_T1498_001|Description ; +MITRE_T1498_001|Description ; +MITRE_T1498|Description ; -MITRE_T1498_001|Detection Strategy ; +MITRE_T1499|Description
+[ 4] hits=2 P@5=0.40 (max 0.40) secRecall=1.00 RR=1.00 | reflection amplification attack with spoofed source addresses
+       +MITRE_T1498|Description ; -MITRE_T1499|Description ; +MITRE_T1498|Description ; -MITRE_T1498_001|Description ; -MITRE_T1499|Description
+[ 5] hits=1 P@5=0.20 (max 0.20) secRecall=1.00 RR=1.00 | SYN flood mitigation with SYN cookies
+       +MITRE_T1499|Mitigations ; -MITRE_T1499|Procedure Examples ; -MITRE_T1498_001|Detection Strategy ; -MITRE_T1498|Mitigations ; -MITRE_T1498_001|Mitigations
+[ 6] hits=3 P@5=0.60 (max 0.60) secRecall=1.00 RR=1.00 | filtering flood traffic upstream with an ISP or content delivery network
+       +MITRE_T1498|Mitigations ; +MITRE_T1498_001|Mitigations ; +MITRE_T1499|Mitigations ; -MITRE_T1498_001|Detection Strategy ; -MITRE_T1498_001|Description
+[ 7] hits=2 P@5=0.40 (max 0.40) secRecall=1.00 RR=1.00 | detecting flooding tools such as hping3 or nping
+       +MITRE_T1498|Detection Strategy ; +MITRE_T1498_001|Detection Strategy ; -NIST_SP_800-94|5.3.3 Detection Capabilities ; -NIST_SP_800-94|5.3.3 Detection Capabilities ; -NIST_SP_800-94|5.3.3 Detection Capabilities
+[ 8] hits=3 P@5=0.60 (max 1.00) secRecall=1.00 RR=1.00 | endpoint denial of service by exhausting operating system or application resources
+       +MITRE_T1499|Description ; +MITRE_T1499|Description ; -MITRE_T1498|Description ; +MITRE_T1499|Detection Strategy ; -MITRE_T1498|Description
+[ 9] hits=1 P@5=0.20 (max 0.40) secRecall=0.50 RR=0.50 | which adversary groups have carried out DDoS attacks
+       -MITRE_T1498|Description ; +MITRE_T1498|Procedure Examples ; -MITRE_T1499|Description ; -MITRE_T1498_001|Description ; -MITRE_T1498|Description
+[10] hits=4 P@5=0.80 (max 1.00) secRecall=1.00 RR=1.00 | IP address spoofing to hide the source of attack traffic
+       +MITRE_T1498|Description ; +MITRE_T1499|Description ; +MITRE_T1499|Description ; +MITRE_T1498|Description ; -NIST_SP_800-61_Rev2|3.3.3 Identifying the Attacking Hosts
+[11] hits=0 P@5=0.00 (max 0.80) secRecall=0.00 RR=0.00 | slow-rate attacks that hold web server connections open
+       -MITRE_T1498|Description ; -NIST_SP_800-94|4.3.3 Detection Capabilities ; -NIST_SP_800-94|6.2.3 Detection Capabilities ; -NIST_SP_800-61_Rev2|2.1 Events and Incidents ; -NIST_SP_800-94|4.3.3 Detection Capabilities
+[12] hits=3 P@5=0.60 (max 1.00) secRecall=0.67 RR=0.50 | network behavior analysis detecting DDoS and scanning
+       -NIST_SP_800-94|6. Network Behavior Analysis (NBA) System ; +NIST_SP_800-94|2.5 Summary ; -NIST_SP_800-94|6.4 Summary ; +NIST_SP_800-94|2.4 Types of IDPS Technologies ; +NIST_SP_800-94|2.5 Summary
+[13] hits=2 P@5=0.40 (max 1.00) secRecall=0.50 RR=1.00 | prevention capabilities of network-based sensors such as blocking traffic
+       +NIST_SP_800-94|4.3.4 Prevention Capabilities ; +NIST_SP_800-94|4.3.4 Prevention Capabilities ; -NIST_SP_800-94|5.3.4 Prevention Capabilities ; -NIST_SP_800-94|6.2.4 Prevention Capabilities ; -NIST_SP_800-94|Appendix A—Glossary
+[14] hits=1 P@5=0.20 (max 1.00) secRecall=1.00 RR=1.00 | how to prioritize an incident
+       +NIST_SP_800-61_Rev2|3.2.6 Incident Prioritization ; -NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|3.5 Incident Handling Checklist ; -NIST_SP_800-61_Rev2|Executive Summary
+[15] hits=3 P@5=0.60 (max 0.60) secRecall=1.00 RR=1.00 | choosing a containment strategy
+       +NIST_SP_800-61_Rev2|3.3.1 Choosing a Containment Strategy ; +NIST_SP_800-61_Rev2|3.3.1 Choosing a Containment Strategy ; +NIST_SP_800-61_Rev2|3.3.1 Choosing a Containment Strategy ; -NIST_SP_800-61_Rev2|Appendix A—Incident Handling Scenarios ; -NIST_SP_800-61_Rev2|Appendix A—Incident Handling Scenarios
+[16] hits=2 P@5=0.40 (max 0.60) secRecall=0.50 RR=1.00 | evidence gathering and chain of custody
+       +NIST_SP_800-61_Rev2|3.3.2 Evidence Gathering and Handling ; -NIST_SP_800-61_Rev2|3.2.5 Incident Documentation ; +NIST_SP_800-61_Rev2|3.3.2 Evidence Gathering and Handling ; -NIST_SP_800-61_Rev2|3.2.5 Incident Documentation ; -NIST_SP_800-61_Rev2|3.1.1 Preparing to Handle Incidents
+[17] hits=2 P@5=0.40 (max 1.00) secRecall=0.50 RR=1.00 | lessons learned meeting after a major incident
+       +NIST_SP_800-61_Rev2|3.4.1 Lessons Learned ; -NIST_SP_800-61_Rev2|Executive Summary ; +NIST_SP_800-61_Rev2|3.4.1 Lessons Learned ; -NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|Executive Summary
+[18] hits=4 P@5=0.80 (max 1.00) secRecall=1.00 RR=1.00 | incident response team models and outsourcing
+       +NIST_SP_800-61_Rev2|2.4.1 Team Models ; +NIST_SP_800-61_Rev2|2.4.1 Team Models ; +NIST_SP_800-61_Rev2|2.4.1 Team Models ; -NIST_SP_800-61_Rev2|2.4.3 Incident Response Personnel ; +NIST_SP_800-61_Rev2|2.4.2 Team Model Selection
+[19] hits=3 P@5=0.60 (max 1.00) secRecall=0.25 RR=1.00 | sharing incident information with outside parties
+       +NIST_SP_800-61_Rev2|2.3.4 Sharing Information With Outside Parties ; -NIST_SP_800-61_Rev2|4.4 Recommendations ; -NIST_SP_800-61_Rev2|4.2.1 Ad Hoc ; +NIST_SP_800-61_Rev2|2.3.4 Sharing Information With Outside Parties ; +NIST_SP_800-61_Rev2|2.3.4 Sharing Information With Outside Parties
+[20] hits=2 P@5=0.40 (max 1.00) secRecall=0.50 RR=1.00 | signs of an incident precursors and indicators
+       +NIST_SP_800-61_Rev2|3.2.2 Signs of an Incident ; +NIST_SP_800-61_Rev2|3.2.2 Signs of an Incident ; -NIST_SP_800-61_Rev2|Appendix C—Glossary ; -NIST_SP_800-61_Rev2|4.3.2 Technical Information ; -NIST_SP_800-61_Rev2|3.2.4 Incident Analysis
+[21] hits=2 P@5=0.40 (max 0.80) secRecall=1.00 RR=1.00 | what to record in incident documentation
+       +NIST_SP_800-61_Rev2|3.2.5 Incident Documentation ; -NIST_SP_800-61_Rev2|3.6 Recommendations ; +NIST_SP_800-61_Rev2|3.2.5 Incident Documentation ; -NIST_SP_800-61_Rev2|3.4.2 Using Collected Incident Data ; -NIST_SP_800-61_Rev2|3.4.1 Lessons Learned
+[22] hits=2 P@5=0.40 (max 1.00) secRecall=1.00 RR=0.25 | preventing incidents by securing networks systems and applications
+       -NIST_SP_800-61_Rev2|Executive Summary ; -NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|3.1.1 Preparing to Handle Incidents ; +NIST_SP_800-61_Rev2|3.1.2 Preventing Incidents ; +NIST_SP_800-61_Rev2|3.1.2 Preventing Incidents
+[23] hits=2 P@5=0.40 (max 0.40) secRecall=1.00 RR=1.00 | identifying the attacking host during an incident
+       +NIST_SP_800-61_Rev2|3.3.3 Identifying the Attacking Hosts ; +NIST_SP_800-61_Rev2|3.3.3 Identifying the Attacking Hosts ; -NIST_SP_800-61_Rev2|4.3.2 Technical Information ; -NIST_SP_800-61_Rev2|3.2.4 Incident Analysis ; -NIST_SP_800-61_Rev2|4.3.2 Technical Information
+[24] hits=4 P@5=0.80 (max 1.00) secRecall=1.00 RR=1.00 | attack vectors such as attrition or web-based attacks
+       +NIST_SP_800-61_Rev2|Executive Summary ; +NIST_SP_800-61_Rev2|3.2.1 Attack Vectors ; +NIST_SP_800-61_Rev2|3.2.1 Attack Vectors ; +NIST_SP_800-61_Rev2|Executive Summary ; -MITRE_T1499|Description
+[25] hits=4 P@5=0.80 (max 1.00) secRecall=1.00 RR=1.00 | event correlation and log analysis during incident analysis
+       +NIST_SP_800-61_Rev2|3.2.4 Incident Analysis ; +NIST_SP_800-61_Rev2|3.6 Recommendations ; +NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|Executive Summary ; +NIST_SP_800-61_Rev2|3.2.4 Incident Analysis
+[26] hits=2 P@5=0.40 (max 0.40) secRecall=1.00 RR=1.00 | signature-based detection and its limitations
+       +NIST_SP_800-94|2.3.1 Signature-Based Detection ; +NIST_SP_800-94|2.3.1 Signature-Based Detection ; -NIST_SP_800-94|7.2.2 Detection Capabilities ; -NIST_SP_800-94|4.5 Summary ; -NIST_SP_800-94|4.3.3 Detection Capabilities
+[27] hits=3 P@5=0.60 (max 0.80) secRecall=1.00 RR=1.00 | anomaly-based detection using profiles of normal activity
+       +NIST_SP_800-94|2.3.2 Anomaly-Based Detection ; -NIST_SP_800-94|2.5 Summary ; +NIST_SP_800-94|2.3.2 Anomaly-Based Detection ; -NIST_SP_800-94|2.5 Summary ; +NIST_SP_800-94|2.3.2 Anomaly-Based Detection
+[28] hits=5 P@5=1.00 (max 1.00) secRecall=1.00 RR=1.00 | stateful protocol analysis of protocol states
+       +NIST_SP_800-94|2.3.3 Stateful Protocol Analysis ; +NIST_SP_800-94|2.3.3 Stateful Protocol Analysis ; +NIST_SP_800-94|2.3.3 Stateful Protocol Analysis ; +NIST_SP_800-94|2.3.3 Stateful Protocol Analysis ; +NIST_SP_800-94|2.3.3 Stateful Protocol Analysis
+[29] hits=3 P@5=0.60 (max 1.00) secRecall=1.00 RR=1.00 | thresholds blacklists and whitelists in intrusion detection
+       +NIST_SP_800-94|3.2.3 Detection Capabilities ; -NIST_SP_800-94|5.3.3 Detection Capabilities ; +NIST_SP_800-94|3.2.3 Detection Capabilities ; +NIST_SP_800-94|3.2.3 Detection Capabilities ; -NIST_SP_800-94|3.4 Summary
+[30] hits=1 P@5=0.20 (max 1.00) secRecall=0.50 RR=0.20 | tuning an IDPS to reduce false positives
+       -NIST_SP_800-94|2.2 Key Functions of IDPS Technologies ; -NIST_SP_800-94|3.3.1 Implementation ; -NIST_SP_800-94|4.3.3 Detection Capabilities ; -NIST_SP_800-94|7.2.2 Detection Capabilities ; +NIST_SP_800-94|3.2.3 Detection Capabilities
+[31] hits=3 P@5=0.60 (max 1.00) secRecall=0.67 RR=1.00 | baseline of normal network behavior for profiling
+       +NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|3.2.4 Incident Analysis ; +NIST_SP_800-61_Rev2|3.6 Recommendations ; -NIST_SP_800-61_Rev2|3.2.4 Incident Analysis ; +NIST_SP_800-94|2.3.2 Anomaly-Based Detection
+[32] hits=5 P@5=1.00 (max 1.00) secRecall=1.00 RR=1.00 | determining likelihood of a threat event and its adverse impact
+       +NIST_SP_800-30_Rev1|3.2 Conducting the Risk Assessment ; +NIST_SP_800-30_Rev1|3.2 Conducting the Risk Assessment ; +NIST_SP_800-30_Rev1|2.3 Key Risk Concepts ; +NIST_SP_800-30_Rev1|2.3 Key Risk Concepts ; +NIST_SP_800-30_Rev1|3.2 Conducting the Risk Assessment
+[33] hits=3 P@5=0.60 (max 1.00) secRecall=1.00 RR=1.00 | preparing for a risk assessment
+       +NIST_SP_800-30_Rev1|3.1 Preparing for the Risk Assessment ; +NIST_SP_800-30_Rev1|3.1 Preparing for the Risk Assessment ; +NIST_SP_800-30_Rev1|3.1 Preparing for the Risk Assessment ; -NIST_SP_800-30_Rev1|3.2 Conducting the Risk Assessment ; -NIST_SP_800-30_Rev1|Chapter 3: The Process
+======================================================================
+queries: 33
+ALL                              n=33 P@5=0.539 ceilingP@5=0.830 R@5(chunks)=0.499 secRecall@5=0.818 success@5=0.970 MRR=0.892
+MITRE attack knowledge           n=11 P@5=0.509 ceilingP@5=0.709 R@5(chunks)=0.658 secRecall@5=0.809 success@5=0.909 MRR=0.864
+IDPS (SP 800-94)                 n= 8 P@5=0.550 ceilingP@5=0.900 R@5(chunks)=0.500 secRecall@5=0.792 success@5=1.000 MRR=0.838
+Incident handling (SP 800-61)    n=12 P@5=0.517 ceilingP@5=0.867 R@5(chunks)=0.423 secRecall@5=0.812 success@5=1.000 MRR=0.938
+Risk (SP 800-30)                 n= 2 P@5=0.800 ceilingP@5=1.000 R@5(chunks)=0.070 secRecall@5=1.000 success@5=1.000 MRR=1.000
+latency seconds: first call 14.13 (includes model loading) | median of the rest 1.16
+wrote C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\retrieval_eval.csv

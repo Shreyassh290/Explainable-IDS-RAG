@@ -1,0 +1,42 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This incident response report is generated based on the detection of a Distributed Denial of Service (DDoS) attack. The attack was detected on February 20, 2018, at 10:21:42, with a confidence level of 1.0000 (Very High: fully automated response). The attack was detected using the CICIDS2018 dataset, which is a widely recognized benchmark for DDoS detection.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of the DDoS attack are:
+
+* Flow ID: 172.31.69.25-18.218.229.235-80-54774-6
+* Timestamp: 20/02/2018 10:21:42
+* Source: 18.218.229.235:54774
+* Destination: 172.31.69.25:80
+* Protocol: TCP (6)
+
+These indicators suggest a large volume of traffic from the source IP address 18.218.229.235 to the destination IP address 172.31.69.25 on port 80. This traffic pattern is consistent with a DDoS attack.
+
+**3. Confidence Assessment**
+
+The confidence level for this detection is 1.0000 (Very High: fully automated response). This high confidence level is due to the use of a well-established and widely recognized dataset (CICIDS2018) and the application of machine learning algorithms to analyze the network flow metadata.
+
+**4. Threat Assessment**
+
+The threat posed by this DDoS attack is significant. DDoS attacks can cause network congestion, slow down network performance, and even bring down entire networks. In this case, the attack is targeting a web server (destination IP address 172.31.69.25:80), which could result in a denial of service to legitimate users.
+
+**5. Recommendations**
+
+Based on the detection of this DDoS attack, the following recommendations are made:
+
+* Implement rate limiting and traffic shaping policies to prevent excessive traffic from reaching the targeted web server.
+* Configure the web server to use a Content Delivery Network (CDN) to distribute traffic and reduce the load on the server.
+* Monitor network traffic and system logs for suspicious activity and implement incident response procedures to quickly respond to future attacks.
+* Consider implementing a Web Application Firewall (WAF) to detect and prevent DDoS attacks at the application layer.
+* Conduct a thorough investigation to identify the source of the attack and take appropriate measures to prevent future attacks.
+
+By following these recommendations, the organization can reduce the risk of future DDoS attacks and ensure the availability and integrity of its network and systems.
+
+References:
+
+* NIST Special Publication 800-61, Guide to Incident Handling
+* MITRE ATT&CK, DDoS Tactics, Techniques, and Procedures (TTPs)

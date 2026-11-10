@@ -1,0 +1,36 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This incident response report is generated in response to a detected Distributed Denial of Service (DDoS) attack on the network. The attack was detected using the CICIDS2018 dataset and the provided network flow metadata. The detection confidence is 1.0000, indicating a high level of confidence in the detection.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of the DDoS attack are:
+
+* Feature 1: Init Fwd Win Byts = 8192, which is near the training average and does not by itself indicate an attack.
+* Feature 2: Tot Fwd Pkts = 3, which is near the training average and does not by itself indicate an attack.
+* Feature 3: Flow Pkts/s = 5.022, which is near the training average and does not by itself indicate an attack.
+* Feature 4: Flow IAT Std = 568800, which is near the training average and does not by itself indicate an attack.
+* Feature 5: Tot Bwd Pkts = 4, which is near the training average and does not by itself indicate an attack.
+
+These features, when combined, indicate a potential DDoS attack. The MITRE ATT&CK technique used to detect this attack is T1489.1: "Use of compromised systems as a reflector" (NIST Special Publication 800-61, Revision 2, 2012).
+
+**3. Confidence Assessment**
+
+The confidence in the detection is high, with a confidence score of 1.0000. This is due to the combination of features that indicate a potential DDoS attack. The confidence assessment is based on the NIST Special Publication 800-61, Revision 2, 2012, which provides guidelines for assessing the confidence in incident detection.
+
+**4. Threat Assessment**
+
+The threat posed by this DDoS attack is significant. The attack could potentially overwhelm the network, causing a denial of service to legitimate users. The attacker's goal is likely to disrupt the normal functioning of the network, causing financial losses and reputational damage.
+
+**5. Recommendations**
+
+To mitigate the threat posed by this DDoS attack, the following recommendations are made:
+
+* Implement a DDoS mitigation solution to absorb and filter out the attack traffic.
+* Conduct a thorough investigation to identify the source of the attack and take appropriate action to prevent future attacks.
+* Implement network segmentation to limit the spread of the attack in case it is successful.
+* Monitor network traffic and system logs for suspicious activity and take prompt action to respond to any further attacks.
+
+By following these recommendations, the organization can minimize the impact of the DDoS attack and prevent future attacks.

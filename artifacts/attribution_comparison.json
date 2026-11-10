@@ -1,0 +1,56 @@
+{
+  "dataset": "val.parquet (200 correctly classified flows: 66 Benign, 67 DoS, 67 DDoS, seed=42)",
+  "background_samples": 100,
+  "methods": {
+    "gradient": {
+      "mean_abs_z_score": 0.5832,
+      "share_abs_z_gt_1": 0.211,
+      "domain_feature_frequency": {
+        "Flow Byts/s": 0.0,
+        "Flow Pkts/s": 0.315,
+        "Init Fwd Win Byts": 0.71,
+        "Protocol": 0.19,
+        "Pkt Len Mean": 0.0
+      },
+      "domain_features_any": 0.243
+    },
+    "grad_x_input": {
+      "mean_abs_z_score": 1.4854,
+      "share_abs_z_gt_1": 0.508,
+      "domain_feature_frequency": {
+        "Flow Byts/s": 0.0,
+        "Flow Pkts/s": 0.0,
+        "Init Fwd Win Byts": 0.625,
+        "Protocol": 0.135,
+        "Pkt Len Mean": 0.04
+      },
+      "domain_features_any": 0.16
+    },
+    "shap": {
+      "mean_abs_z_score": 1.3961,
+      "share_abs_z_gt_1": 0.447,
+      "domain_feature_frequency": {
+        "Flow Byts/s": 0.0,
+        "Flow Pkts/s": 0.0,
+        "Init Fwd Win Byts": 0.195,
+        "Protocol": 0.2,
+        "Pkt Len Mean": 0.045
+      },
+      "domain_features_any": 0.088
+    }
+  },
+  "pairwise_overlaps": {
+    "gradient_vs_grad_x_input": {
+      "mean_count_overlap": 2.37,
+      "mean_jaccard_similarity": 0.332
+    },
+    "gradient_vs_shap": {
+      "mean_count_overlap": 1.6,
+      "mean_jaccard_similarity": 0.2075
+    },
+    "grad_x_input_vs_shap": {
+      "mean_count_overlap": 3.04,
+      "mean_jaccard_similarity": 0.486
+    }
+  }
+}

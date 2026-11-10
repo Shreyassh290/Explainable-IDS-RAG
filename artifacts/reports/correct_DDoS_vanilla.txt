@@ -1,0 +1,42 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+On February 21, 2018, at 02:11:32, a potential Distributed Denial of Service (DDoS) attack was detected. The detection was based on a combination of network flow metadata and key anomalous indicators. The attack was classified as a DDoS attack due to the unusual traffic patterns and protocol usage.
+
+**2. Key Indicators**
+
+The top-5 features most influential in this decision were:
+
+* Feature 3: Init Fwd Win Byts = 32740 (moderately above the training average; effect on the DDoS score: raises)
+	+ This value is moderately above the training average, indicating a potential anomaly. Anomalous or absent forward window values can flag scanning or attack tools, consistent with MITRE ATT&CK technique T1490 (Network Denial of Service).
+* Feature 5: Tot Fwd Pkts = 2 (near the training average; effect on the DDoS score: raises)
+	+ This value is near the training average, but the combination with other features raises the DDoS score.
+
+**3. Confidence Assessment**
+
+The confidence level for this detection is 0.9985, indicating a Very High level of confidence. This is based on the combination of features and the detection's ability to accurately identify DDoS attacks in the CICIDS2018 dataset.
+
+**4. Threat Assessment**
+
+The detected DDoS attack has a potential impact on network availability and performance. If left unchecked, it could lead to:
+
+* Network congestion and slowdowns
+* Increased latency and packet loss
+* Potential data corruption or loss
+
+**5. Recommendations**
+
+To mitigate this potential threat, the following recommendations are made:
+
+* Implement rate limiting and traffic shaping to control the volume of traffic
+* Configure firewalls and intrusion detection systems to block suspicious traffic
+* Monitor network performance and traffic patterns to detect and respond to potential attacks
+* Implement incident response procedures to quickly contain and remediate the attack
+
+By following these recommendations, the potential impact of the detected DDoS attack can be minimized, and the network's availability and performance can be preserved.
+
+References:
+
+* NIST Special Publication 800-61, Guide to Incident Handling
+* MITRE ATT&CK, Network Denial of Service (T1490)

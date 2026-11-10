@@ -1,0 +1,34 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This incident response report is generated based on the detection of a Distributed Denial of Service (DDoS) attack. The attack was detected on February 20, 2018, at 11:02:09, with a confidence level of 1.0000 (Very High: fully automated response). The detection was made using the CICIDS2018 dataset, which is a widely used benchmark for evaluating DDoS detection algorithms.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of the DDoS attack are:
+
+* Feature 2: Init Fwd Win Byts = 2049 (moderately below the training average), which suggests anomalous or absent forward window values, potentially indicative of scanning or attack tools.
+* Feature 3: Idle Mean = 24300000 (moderately above the training average), which reflects pause behavior between packet bursts, consistent with a DDoS attack.
+* Feature 5: ACK Flag Cnt = 1 (moderately above the training average), which indicates elevated ACK count, consistent with established connections under high-rate interaction.
+
+These indicators, when combined, suggest a DDoS attack is likely occurring.
+
+**3. Confidence Assessment**
+
+The confidence level for this detection is 1.0000 (Very High: fully automated response), indicating that the detection was made with a high degree of certainty. This confidence level is based on the combination of the anomalous indicators and the training data used to develop the DDoS detection algorithm.
+
+**4. Threat Assessment**
+
+The detected DDoS attack is a significant threat to the targeted system, as it can cause network congestion, slow down network performance, and potentially lead to system crashes or downtime. The attack is likely to be a targeted attack, as the attacker is attempting to overwhelm the targeted system with a large volume of traffic.
+
+**5. Recommendations**
+
+To mitigate the detected DDoS attack, the following recommendations are made:
+
+* Implement rate limiting and traffic shaping techniques to reduce the impact of the attack.
+* Activate the network's DDoS mitigation system to block or rate-limit the malicious traffic.
+* Monitor the network traffic and system performance to detect any further anomalies or attacks.
+* Conduct a thorough investigation to identify the source of the attack and take appropriate measures to prevent future attacks.
+
+This report is generated in accordance with the NIST Special Publication 800-61, Guide to Incident Handling, and the MITRE ATT&CK framework, which provides a structured approach to incident response and threat analysis.

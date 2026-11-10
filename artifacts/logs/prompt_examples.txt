@@ -1,0 +1,8 @@
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_Benign_rag.txt words=2304 sources=7
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_Benign_vanilla.txt words=329 sources=0
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_DoS_rag.txt words=1482 sources=5
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_DoS_vanilla.txt words=296 sources=0
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_DDoS_rag.txt words=1355 sources=5
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\correct_DDoS_vanilla.txt words=301 sources=0
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\misclassified_rag.txt words=1352 sources=5
+C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\prompts\misclassified_vanilla.txt words=298 sources=0

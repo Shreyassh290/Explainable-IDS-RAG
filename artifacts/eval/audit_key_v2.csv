@@ -1,0 +1,11 @@
+﻿flow_code,flow_index,true_class,report_file
+F01,19603,DDoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_19603_rag.txt
+F02,54212,DoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_54212_rag.txt
+F03,51486,Benign,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_51486_rag.txt
+F04,106513,DDoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_106513_rag.txt
+F05,48490,DoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_48490_rag.txt
+F06,65622,DoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_65622_rag.txt
+F07,115902,DDoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_115902_rag.txt
+F08,110886,DoS,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_110886_rag.txt
+F09,10400,Benign,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_10400_rag.txt
+F10,10045,Benign,C:\Users\shrey\Downloads\AIML_Project\ids-rag-mitigation\artifacts\eval\flows\flow_10045_rag.txt

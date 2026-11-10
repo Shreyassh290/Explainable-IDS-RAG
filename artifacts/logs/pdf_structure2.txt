@@ -1,0 +1,277 @@
+=== SP 800-94 === 127 pages
+TOC-like lines in p5-p8: 139
+   1. Introduction ........................................................................................................
+   2. Intrusion Detection and Prevention Principles .............................................................2-1
+   3. IDPS Technologies....................................................................................................
+   4. Network-Based IDPS...................................................................................................
+   5. Wireless IDPS........................................................................................................
+   6. Network Behavior Analysis (NBA) System....................................................................6-1
+   7. Host-Based IDPS......................................................................................................
+   8. Using and Integrating Multiple IDPS Technologies ......................................................8-1
+   9. IDPS Product Selection ..............................................................................................
+   Appendix A— Glossary ...................................................................................................
+   Appendix B— Acronyms....................................................................................................
+   Appendix C— Tools and Resources ..................................................................................... C-
+   Appendix D— Index ......................................................................................................
+[p18]
+    GUIDE TO INTRUSION DETECTION AND PREVENTION SYSTEMS (IDPS)
+    2.3.1 Signature-Based Detection
+    A signature is a pattern that corresponds to a known threat.  Signature-based detection is the process of
+    comparing signatures against observed events to identify possible incidents.5  Examples of signatures are
+    as follows:
+    A telnet attempt with a username of “root”, which is a violation of an organization’s security policy
+    An e-mail with a subject of “Free pictures!” and an attachment filename of “freepics.exe”, which are
+    characteristics of a known form of malware
+    An operating system log entry with a status code value of 645, which indicates that the host’s auditing
+    has been disabled.
+    Signature-based detection is very effective at detecting known threats but largely ineffective at detecting
+    previously unknown threats, threats disguised by the use of evasion techniques, and many variants of
+    known threats.  For example, if an attacker modified the malware in the previous example to use a
+    filename of “freepics2.exe”, a signature looking for “freepics.exe” would not match it.
+    Signature-based detection is the simplest detection method because it just compares the current unit of
+    activity, such as a packet or a log entry, to a list of signatures using string comparison operations.
+    Signature-based detection technologies have little understanding of many network or application
+    protocols and cannot track and understand the state of complex communications.  For example, they
+    cannot pair a request with the corresponding response, such as knowing that a request to a Web server for
+    a particular page generated a response status code of 403, meaning that the server refused to fill the
+    request.  They also lack the ability to remember previous requests when processing the current request.
+    This limitation prevents signature-based detection methods from detecting attacks that comprise multiple
+    events if none of the events contains a clear indication of an attack.
+    2.3.2 Anomaly-Based Detection
+    Anomaly-based detection is the process of comparing definitions of what activity is considered normal
+    against observed events to identify significant deviations.  An IDPS using anomaly-based detection has
+[p23]
+    GUIDE TO INTRUSION DETECTION AND PREVENTION SYSTEMS (IDPS)
+    3. IDPS Technologies
+    This section provides an overview of IDPS technologies.  The information presented in this section
+    applies to all types of IDPS products; additional information specific to each product type is presented in
+    Sections 4 through 7.  This section first covers the major components of IDPS technologies and explains
+    the architectures typically used for deploying the components.  It also provides a high-level description of
+    the security capabilities of the technologies, including the methodologies they use to identify suspicious
+    activity.  The rest of the section discusses the management capabilities of the technologies, including
+    detailed recommendations for implementation and operation.
+    3.1 Components and Architecture
+    This section describes the major components of IDPS solutions and illustrates the most common network
+    architectures for these components.
+    3.1.1 Typical Components
+    The typical components in an IDPS solution are as follows:
+    Sensor or Agent.  Sensors and agents monitor and analyze activity.  The term sensor is typically used
+    for IDPSs that monitor networks, including network-based, wireless, and network behavior analysis
+    technologies.  The term agent is typically used for host-based IDPS technologies.
+    Management Server.  A management server is a centralized device that receives information from
+    the sensors or agents and manages them.7  Some management servers perform analysis on the event
+    information that the sensors or agents provide and can identify events that the individual sensors or
+    agents cannot.  Matching event information from multiple sensors or agents, such as finding events
+    triggered by the same IP address, is known as correlation.  Management servers are available as both
+    appliance and software-only products.  Some small IDPS deployments do not use any management
+    servers, but most IDPS deployments do.  In larger IDPS deployments, there are often multiple
+    management servers, and in some cases there are two tiers of management servers.
+    Database Server.  A database server is a repository for event information recorded by sensors,
+pages whose first lines start with 'Appendix X': [111, 115, 119, 125]
+[p111]
+    GUIDE TO INTRUSION DETECTION AND PREVENTION SYSTEMS (IDPS)
+    Appendix A—Glossary
+    Selected terms used in the Guide to Intrusion Detection and Prevention Systems (IDPS) are defined
+    below.
+    Agent:  A host-based intrusion detection and prevention program that monitors and analyzes activity and
+    may also perform prevention actions.
+    Alert:  A notification of an important observed event.
+    Anomaly-Based Detection:  The process of comparing definitions of what activity is considered normal
+    against observed events to identify significant deviations.
+    Antivirus Software:  A program that monitors a computer or network to identify all major types of
+    malware and prevent or contain malware incidents.
+    Application-Based Intrusion Detection and Prevention System:  A host-based intrusion detection and
+    prevention system that performs monitoring for a specific application service only, such as a Web server
+    program or a database server program.
+    Blacklist:  A list of discrete entities, such as hosts or applications, that have been previously determined
+    to be associated with malicious activity.
+    Blinding:  Generating network traffic that is likely to trigger many alerts in a short period of time, to
+    conceal alerts triggered by a “real” attack performed simultaneously.
+    Channel Scanning:  Changing the channel being monitored by a wireless intrusion detection and
+    prevention system.
+    Console:  A program that provides user and administrator interfaces to an intrusion detection and
+    prevention system.
+[p127]
+    GUIDE TO INTRUSION DETECTION AND PREVENTION SYSTEMS (IDPS)
+    Known, 2-4
+    Unknown, 2-4
+    Threshold, 3-3, 3-4
+    Training period, 2-5
+    Training, documentation, and technical support, 9-12
+    Transmission Control Protocol (TCP), 4-2
+    Transmission Control Protocol/Internet Protocol, 4-1
+    Transport layer, 4-1, 4-2, 4-9
+    Triangulation, 5-9
+    Tuning, 2-3, 3-3, 3-4, 4-11, 5-10, 6-5, 7-6
+    U
+=== SP 800-30 === 95 pages
+[p1]
+    I N F O R M A T I O N     S E C U R I T Y
+    Computer Security Division
+    Information Technology Laboratory
+    National Institute of Standards and Technology
+    Gaithersburg, MD 20899-8930
+    September 2012
+    U.S. Department of Commerce
+    Rebecca M. Blank, Acting Secretary
+    National Institute of Standards and Technology
+    Patrick D. Gallagher, Under Secretary for Standards and Technology
+    and Director
+    Guide for Conducting
+    Risk Assessments
+    JOINT TASK FORCE
+    TRANSFORMATION INITIATIVE
+    NIST Special Publication 800-30
+    Revision 1
+[p10]
+    Special Publication 800-30                                                                              Guide for Conduc
+    ________________________________________________________________________________________________
+    CHAPTER 1  PAGE 1
+    CHAPTER ONE
+    INTRODUCTION
+    THE NEED FOR RISK ASSESSMENTS TO SUPPORT ENTERPRISE-WIDE RISK MANAGEMENT
+    rganizations5 in the public and private sectors depend on information technology6 and
+    information systems7 to successfully carry out their missions and business functions.
+    Information systems can include very diverse entities ranging from office networks,
+    financial and personnel systems to very specialized systems (e.g., industrial/process control
+    systems, weapons systems, telecommunications systems, and environmental control systems).
+    Information systems are subject to serious threats that can have adverse effects on organizational
+    operations and assets, individuals, other organizations, and the Nation by exploiting both known
+    and unknown vulnerabilities to compromise the confidentiality, integrity, or availability of the
+    information being processed, stored, or transmitted by those systems. Threats to information
+    systems can include purposeful attacks, environmental disruptions, human/machine errors, and
+    structural failures, and can result in harm to the national and economic security interests of the
+    United States. Therefore, it is imperative that leaders and managers at all levels understand their
+    responsibilities and are held accountable for managing information security risk—that is, the risk
+    associated with the operation and use of information systems that support the missions and
+    business functions of their organizations.
+    Risk assessment is one of the fundamental components of an organizational risk management
+    process as described in NIST Special Publication 800-39. Risk assessments are used to identify,
+    estimate, and prioritize risk to organizational operations (i.e., mission, functions, image, and
+    reputation), organizational assets, individuals, other organizations, and the Nation, resulting from
+    the operation and use of information systems. The purpose of risk assessments is to inform
+    decision makers and support risk responses by identifying: (i) relevant threats to organizations or
+    threats directed through organizations against other organizations; (ii) vulnerabilities both internal
+    and external to organizations; (iii) impact (i.e., harm) to organizations that may occur given the
+    potential for threats exploiting vulnerabilities; and (iv) likelihood that harm will occur. The end
+[p13]
+    Special Publication 800-30                                                                              Guide for Conduc
+    ________________________________________________________________________________________________
+    CHAPTER 2  PAGE 4
+    CHAPTER TWO
+    THE FUNDAMENTALS
+    BASIC CONCEPTS ASSOCIATED WITH RISK ASSESSMENTS
+    his chapter describes the fundamental concepts associated with assessing information
+    security risk within an organization including: (i) a high-level overview of the risk
+    management process and the role risk assessments play in that process; (ii) the basic
+    concepts used in conducting risk assessments; and (iii) how risk assessments can be applied
+    across the organization’s risk management tiers.12
+    2.1   RISK MANAGEMENT PROCESS
+    Risk assessment is a key component of a holistic, organization-wide risk management process as
+    defined in NIST Special Publication 800-39, Managing Information Security Risk: Organization,
+    Mission, and Information System View. Risk management processes include: (i) framing risk; (ii)
+    assessing risk; (iii) responding to risk; and (iv) monitoring risk. Figure 1 illustrates the four steps
+    in the risk management process—including the risk assessment step and the information and
+    communications flows necessary to make the process work effectively.13
+    FIGURE 1: RISK ASSESSMENT WITHIN THE RISK MANAGEMENT PROCESS
+    The first component of risk management addresses how organizations frame risk or establish a
+    risk context—that is, describing the environment in which risk-based decisions are made. The
+    purpose of the risk framing component is to produce a risk management strategy that addresses
+    how organizations intend to assess risk, respond to risk, and monitor risk—making explicit and
+    12 NIST Special Publication 800-39 provides guidance on the three tiers in the risk management hierarchy including
+    Tier 1 (organization), Tier 2 (mission/business process), and Tier 3 (information system).
+    13 Many of the outputs from the risk framing step provide essential inputs to the risk assessment step and the associate
+    risk assessment process. These include, for example, the risk management strategy, organizational risk tolerance, risk
+    assessment methodology, assumptions, constraints, and mission/business priorities.
+    T
+    Information and
+[p21]
+    Special Publication 800-30                                                                              Guide for Conduc
+    ________________________________________________________________________________________________
+    CHAPTER 2  PAGE 12
+    Strategic plans and policies also assert or imply the relative priorities of immediate or near-term
+    mission/business function accomplishment and long-term organizational viability (which can be
+    undermined by the loss of reputation or by sanctions resulting from the compromise of sensitive
+    information). Organizations can also consider the range of effects of threat events including the
+    relative size of the set of resources affected, when making final impact determinations. Risk
+    tolerance assumptions may state that threat events with an impact below a specific value do not
+    warrant further analysis.
+    Risk
+    Figure 3 illustrates an example of a risk model including the key risk factors discussed above and
+    the relationship among the factors. Each of the risk factors is used in the risk assessment process
+    in Chapter Three.
+    FIGURE 3: GENERIC RISK MODEL WITH KEY RISK FACTORS
+    As noted above, risk is a function of the likelihood of a threat event’s occurrence and potential
+    adverse impact should the event occur. This definition accommodates many types of adverse
+    impacts at all tiers in the risk management hierarchy described in Special Publication 800-39
+    (e.g., damage to image or reputation of the organization or financial loss at Tier 1; inability to
+    successfully execute a specific mission/business process at Tier 2; or the resources expended in
+    responding to an information system incident at Tier 3). It also accommodates relationships
+    among impacts (e.g., loss of current or future mission/business effectiveness due to the loss of
+    data confidentiality; loss of confidence in critical information due to loss of data or system
+    integrity; or unavailability or degradation of information or information systems). This broad
+    definition also allows risk to be represented as a single value or as a vector (i.e., multiple values),
+    in which different types of impacts are assessed separately. For purposes of risk communication,
+    risk is generally grouped according to the types of adverse impacts (and possibly the time frames
+    in which those impacts are likely to be experienced).
+    Risk Framing
+    producing
+first page of each chapter/appendix header label: {'CHAPTER 1': 10, 'CHAPTER 2': 13, 'CHAPTER 3': 32, 'APPENDIX A': 49, 'APPENDIX B': 51, 'APPENDIX C': 64, 'APPENDIX D': 65, 'APPENDIX E': 69, 'APPENDIX F': 77, 'APPENDIX G': 81, 'APPENDIX H': 83, 'APPENDIX I': 86, 'APPENDIX J': 90, 'APPENDIX K': 92, 'APPENDIX L': 94}
+[p65]
+    Special Publication 800-30                                                                              Guide for Conduc
+    ________________________________________________________________________________________________
+    APPENDIX D   PAGE D-1
+    APPENDIX D
+    THREAT SOURCES
+    TAXONOMY OF THREATS SOURCES CAPABLE OF INITIATING THREAT EVENTS
+    his appendix provides: (i) a description of potentially useful inputs to the threat source
+    identification task; (ii) an exemplary taxonomy of threat sources by type, description, and
+    risk factors (i.e., characteristics) used to assess the likelihood and/or impact of such threat
+    sources initiating threat events; (iii) an exemplary set of tailorable assessment scales for assessing
+    those risk factors; and (iv) templates for summarizing and documenting the results of the threat
+    source identification Task 2-1. The taxonomy and assessment scales in this appendix can be used
+    by organizations as a starting point with appropriate tailoring to adjust for organization-specific
+    conditions. Tables D-7 and D-8, outputs from Task 2-1, provide relevant inputs to the risk tables
+    in Appendix I.
+    TABLE D-1: INPUTS – THREAT SOURCE IDENTIFICATION
+    Description
+    Provided To
+    Tier 1 Tier 2 Tier 3
+    From Tier 1: (Organization level)
+    - Sources of threat information deemed to be credible (e.g., open source and/or classified threat
+    reports, previous risk/threat assessments). (Section 3.1, Task 1-4)
+    - Threat source information and guidance specific to Tier 1 (e.g., threats related to organizational
+    governance, core missions/business functions, management/operational policies, procedures, and
+    structures, external mission/business relationships).
+    - Taxonomy of threat sources, annotated by the organization, if necessary. (Table D-2)
+    - Characterization of adversarial and non-adversarial threat sources.
+    - Assessment scales for assessing adversary capability, intent, and targeting, annotated by the
+[p83]
+    Special Publication 800-30                                                                              Guide for Conduc
+    ________________________________________________________________________________________________
+    APPENDIX H   PAGE H-1
+    APPENDIX H
+    IMPACT
+    EFFECTS OF THREAT EVENTS ON ORGANIZATIONS, INDIVIDUALS, AND THE NATION
+    his appendix provides: (i) a description of useful inputs to the impact determination task;
+    (ii) representative examples of adverse impacts to organizational operations and assets,
+    individuals, other organizations, or the Nation; (iii) exemplary assessment scales for
+    assessing the impact of threat events and the range of effect of threat events; and (iv) a template
+    for summarizing and documenting the results of the impact determination Task 2-5. The
+    assessment scales in this appendix can be used as a starting point with appropriate tailoring to
+    adjust for any organization-specific conditions. Table H-4, an output from Task 2-5, provides
+    relevant inputs to the risk tables in Appendix I.
+    TABLE H-1: INPUTS – DETERMINATION OF IMPACT
+    Description
+    Provided To
+    Tier 1 Tier 2 Tier 3
+    From Tier 1 (Organization level)
+    - Impact information and guidance specific to Tier 1 (e.g., impact information related to organizational
+    governance, core missions/business functions, management and operational policies, procedures,
+    and structures, external mission/business relationships).
+    - Guidance on organization-wide levels of impact needing no further consideration.
+    - Identification of critical missions/business functions.
+    - Exemplary set of impacts, annotated by the organization, if necessary. (Table H-2)
+    - Assessment scale for assessing the impact of threat events, annotated by the organization, if
+    necessary. (Table H-3)
+    No Yes Yes

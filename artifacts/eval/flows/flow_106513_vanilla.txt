@@ -1,0 +1,38 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+This incident response report is generated in response to a detected Distributed Denial of Service (DDoS) attack on the network. The attack was detected using the CICIDS2018 dataset and the provided network flow metadata. The detection confidence is 1.0000, indicating a high level of confidence in the detection.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of the DDoS attack are:
+
+* The flow ID indicates a connection from 18.216.24.42:59948 to 172.31.69.25:80, which is a potential attack vector.
+* The protocol used is TCP (6), which is a common protocol used in DDoS attacks.
+* The top-5 features most influential in this decision are:
+	+ Init Fwd Win Byts = 8192, which is near the training average and does not by itself indicate an attack.
+	+ Tot Fwd Pkts = 3, which is near the training average and does not by itself indicate an attack.
+	+ Flow Pkts/s = 5.723, which is near the training average and does not by itself indicate an attack.
+	+ Flow IAT Std = 499200, which is near the training average and does not by itself indicate an attack.
+	+ Tot Bwd Pkts = 4, which is near the training average and does not by itself indicate an attack.
+
+**3. Confidence Assessment**
+
+The confidence assessment for this incident is Very High (1.0000), indicating a high level of confidence in the detection. This is based on the combination of the flow ID, protocol, and top-5 features, which collectively indicate a potential DDoS attack.
+
+**4. Threat Assessment**
+
+The threat assessment for this incident is High, indicating a significant risk to the network and its resources. The DDoS attack has the potential to overwhelm the network, causing a denial of service to legitimate users and disrupting business operations.
+
+**5. Recommendations**
+
+To mitigate the threat of this DDoS attack, the following recommendations are made:
+
+* Implement a DDoS mitigation solution, such as a cloud-based DDoS protection service or an on-premises DDoS mitigation appliance.
+* Configure the network to rate-limit or block traffic from the suspected attacker IP address.
+* Monitor network traffic and system logs for further signs of the attack.
+* Conduct a thorough investigation to identify the source of the attack and take appropriate action to prevent future attacks.
+* Consider implementing additional security measures, such as intrusion detection and prevention systems (IDPS) and web application firewalls (WAFs), to detect and prevent future attacks.
+
+This report is generated in accordance with the NIST Special Publication 800-61, Guide to Incident Handling, and the MITRE ATT&CK framework.

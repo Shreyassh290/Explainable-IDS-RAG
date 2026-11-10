@@ -1,0 +1,35 @@
+﻿# Codes: T98 = MITRE_T1498, T98a = MITRE_T1498_001, T99 = MITRE_T1499, N61 = SP 800-61 Rev2, N94 = SP 800-94, N30 = SP 800-30 Rev1
+queries:
+  - {id: 1, q: "denial of service flood attack", rel: ["T98|Description", "T98a|Description", "T99|Description", "T98|Procedure Examples", "T99|Procedure Examples"]}
+  - {id: 2, q: "T1498 network denial of service", rel: ["T98|Description", "T98|Procedure Examples", "T98|Mitigations", "T98|Detection Strategy", "T98a|Description"]}
+  - {id: 3, q: "direct network flood using a botnet", rel: ["T98a|Description", "T98|Description", "T99|Description"]}
+  - {id: 4, q: "reflection amplification attack with spoofed source addresses", rel: ["T98|Description"]}
+  - {id: 5, q: "SYN flood mitigation with SYN cookies", rel: ["T99|Mitigations"]}
+  - {id: 6, q: "filtering flood traffic upstream with an ISP or content delivery network", rel: ["T98|Mitigations", "T98a|Mitigations", "T99|Mitigations"]}
+  - {id: 7, q: "detecting flooding tools such as hping3 or nping", rel: ["T98|Detection Strategy", "T98a|Detection Strategy"]}
+  - {id: 8, q: "endpoint denial of service by exhausting operating system or application resources", rel: ["T99|Description", "T99|Detection Strategy"]}
+  - {id: 9, q: "which adversary groups have carried out DDoS attacks", rel: ["T98|Procedure Examples", "T99|Procedure Examples"]}
+  - {id: 10, q: "IP address spoofing to hide the source of attack traffic", rel: ["T98|Description", "T99|Description"]}
+  - {id: 11, q: "slow-rate attacks that hold web server connections open", rel: ["T99|Description"]}
+  - {id: 12, q: "network behavior analysis detecting DDoS and scanning", rel: ["N94|6.2.3 Detection Capabilities", "N94|2.5 Summary", "N94|2.4 Types of IDPS Technologies"]}
+  - {id: 13, q: "prevention capabilities of network-based sensors such as blocking traffic", rel: ["N94|4.3.4 Prevention Capabilities", "N94|3.2.4 Prevention Capabilities"]}
+  - {id: 14, q: "how to prioritize an incident", rel: ["N61|3.2.6 Incident Prioritization"]}
+  - {id: 15, q: "choosing a containment strategy", rel: ["N61|3.3.1 Choosing a Containment Strategy"]}
+  - {id: 16, q: "evidence gathering and chain of custody", rel: ["N61|3.3.2 Evidence Gathering and Handling", "N61|3.4.3 Evidence Retention"]}
+  - {id: 17, q: "lessons learned meeting after a major incident", rel: ["N61|3.4.1 Lessons Learned", "N61|3.4.2 Using Collected Incident Data"]}
+  - {id: 18, q: "incident response team models and outsourcing", rel: ["N61|2.4.1 Team Models", "N61|2.4.2 Team Model Selection"]}
+  - {id: 19, q: "sharing incident information with outside parties", rel: ["N61|2.3.4 Sharing Information With Outside Parties", "N61|4.1.2 Sharing Agreements and Reporting Requirements", "N61|4.2 Information Sharing Techniques", "N61|4.3.2 Technical Information"]}
+  - {id: 20, q: "signs of an incident precursors and indicators", rel: ["N61|3.2.2 Signs of an Incident", "N61|3.2.3 Sources of Precursors and Indicators"]}
+  - {id: 21, q: "what to record in incident documentation", rel: ["N61|3.2.5 Incident Documentation"]}
+  - {id: 22, q: "preventing incidents by securing networks systems and applications", rel: ["N61|3.1.2 Preventing Incidents"]}
+  - {id: 23, q: "identifying the attacking host during an incident", rel: ["N61|3.3.3 Identifying the Attacking Hosts"]}
+  - {id: 24, q: "attack vectors such as attrition or web-based attacks", rel: ["N61|3.2.1 Attack Vectors", "N61|Executive Summary"]}
+  - {id: 25, q: "event correlation and log analysis during incident analysis", rel: ["N61|3.2.4 Incident Analysis", "N61|3.6 Recommendations"]}
+  - {id: 26, q: "signature-based detection and its limitations", rel: ["N94|2.3.1 Signature-Based Detection"]}
+  - {id: 27, q: "anomaly-based detection using profiles of normal activity", rel: ["N94|2.3.2 Anomaly-Based Detection"]}
+  - {id: 28, q: "stateful protocol analysis of protocol states", rel: ["N94|2.3.3 Stateful Protocol Analysis"]}
+  - {id: 29, q: "thresholds blacklists and whitelists in intrusion detection", rel: ["N94|3.2.3 Detection Capabilities"]}
+  - {id: 30, q: "tuning an IDPS to reduce false positives", rel: ["N94|3.3.2 Operation and Maintenance", "N94|3.2.3 Detection Capabilities"]}
+  - {id: 31, q: "baseline of normal network behavior for profiling", rel: ["N61|3.6 Recommendations", "N94|2.3.2 Anomaly-Based Detection", "N94|6.2.3 Detection Capabilities"]}
+  - {id: 32, q: "determining likelihood of a threat event and its adverse impact", rel: ["N30|2.3 Key Risk Concepts", "N30|3.2 Conducting the Risk Assessment"]}
+  - {id: 33, q: "preparing for a risk assessment", rel: ["N30|3.1 Preparing for the Risk Assessment"]}

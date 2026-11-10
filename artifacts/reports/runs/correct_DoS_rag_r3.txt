@@ -1,0 +1,33 @@
+**Structured Incident Response Report**
+
+**1. Rationale**
+
+Based on the detection context, this report aims to provide a structured incident response to a suspected Denial of Service (DoS) attack. The attack is classified as a DoS attack, with a confidence level of 1.0000 (Very High: fully automated response). The dataset used is CICIDS2018.
+
+**2. Key Indicators**
+
+The key indicators that led to the detection of this attack are:
+
+* Elevated ACK count (Feature 1): This suggests established connections under high-rate interaction, consistent with DoS attack patterns.
+* Absent or anomalous forward window values (Feature 3): This may indicate scanning or attack tools, which is a common characteristic of DoS attacks.
+* Few PSH flags despite many packets (Feature 4): This could indicate payload-free flooding traffic, which is a common technique used in DoS attacks.
+
+**3. Confidence Assessment**
+
+The confidence level for this attack is 1.0000 (Very High: fully automated response). This is based on the combination of features that indicate a DoS attack, including elevated ACK count, absent or anomalous forward window values, and few PSH flags despite many packets.
+
+**4. Threat Assessment**
+
+Based on the MITRE ATT&CK techniques [1-3], this attack is likely a Network Denial of Service (DoS) attack, specifically a Direct Network Flood [T1498.001]. This type of attack involves sending a high-volume of network traffic to a target, which can reduce the availability and functionality of the targeted system(s) and network.
+
+**5. Recommendations**
+
+To mitigate this attack, the following recommendations are made:
+
+* Implement network-based intrusion detection systems (NIDS) and intrusion prevention systems (IPS) to detect and prevent DoS attacks [NIST SP 800-94, section 5.3.3].
+* Configure firewalls to block suspicious traffic and limit the number of connections from a single IP address.
+* Implement rate limiting and IP blocking to prevent flooding attacks.
+* Monitor network traffic and system resources to detect and respond to DoS attacks.
+* Implement a incident response plan to quickly respond to and contain DoS attacks.
+
+By following these recommendations, organizations can effectively mitigate the risk of DoS attacks and ensure the availability and security of their networks and systems.

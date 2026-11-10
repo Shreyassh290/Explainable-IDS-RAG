@@ -1,0 +1,28 @@
+AUDIT RESULTS v2 (scorer 1, rows judged: 39)
+================================================================
+CITATION ROWS (sentence vs the chunk it cites)
+  Benign rows  5 (flows 3)  yes 0  partial 4  no 1
+         yes: 0/5 (0%) | yes or partial: 4/5 (80%)
+  DoS    rows 18 (flows 4)  yes 9  partial 6  no 3
+         yes: 9/18 (50%) | yes or partial: 15/18 (83%)
+  DDoS   rows 13 (flows 3)  yes 3  partial 7  no 3
+         yes: 3/13 (23%) | yes or partial: 10/13 (77%)
+  ALL    rows 36 (flows 10)  yes 12  partial 17  no 7
+         yes: 12/36 (33%) | yes or partial: 29/36 (81%)
+
+CITATION ROWS BY SOURCE TYPE
+  NIST   rows  9  yes 3  partial 5  no 1 | yes: 3/9 (33%)
+  MITRE  rows 27  yes 9  partial 12  no 6 | yes: 9/27 (33%)
+
+ATTACK ID ROWS (id and technique name match)
+  Benign rows  0 (flows 0)  correct 0  wrong 0
+         correct: 0/0
+  DoS    rows  3 (flows 2)  correct 3  wrong 0
+         correct: 3/3 (100%)
+  DDoS   rows  0 (flows 0)  correct 0  wrong 0
+         correct: 0/0
+  ALL    rows  3 (flows 2)  correct 3  wrong 0
+         correct: 3/3 (100%)
+
+Notes: rows within a flow are not independent, and Benign flows cite the
+same chunk. Report counts, not only percentages. Small sample.

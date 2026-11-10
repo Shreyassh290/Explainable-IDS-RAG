@@ -1,0 +1,11 @@
+REFERENCE DOCUMENTS versus the whole knowledge base
+  Benign  trigrams found in KB: 0.21 | 8-word spans copied from KB: 10
+  DoS     trigrams found in KB: 0.29 | 8-word spans copied from KB: 2
+  DDoS    trigrams found in KB: 0.30 | 8-word spans copied from KB: 17
+REPORTS versus the chunks retrieved for the same flow
+  vanilla  mean trigram share 0.016 | reports with an 8-word copied span 0/30 | mean copied 8-word spans 0.00
+  rag      mean trigram share 0.067 | reports with an 8-word copied span 15/30 | mean copied 8-word spans 4.93
+  paired difference in trigram share (rag - vanilla): +0.051 | wins 25/30 | Wilcoxon p 9.98e-07
+  Benign  trigram share vanilla 0.015 -> rag 0.027
+  DoS     trigram share vanilla 0.015 -> rag 0.099
+  DDoS    trigram share vanilla 0.020 -> rag 0.075
