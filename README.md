@@ -60,6 +60,14 @@ Pipeline options (from `--help`): `--index N` or `--indices 1,2,3` or `--indices
 uv run python -m ids_rag.pipeline --index 10045 --mode both
 ```
 
+**Analyst alert (extension).** `ids_rag.alert` converts a stored `artifacts\reports\flows\flow_N.json` (written by the pipeline) into a short analyst alert, `artifacts\alerts\alert_flow_N.json`. The alert holds the predicted class and confidence, the top-5 features with exact values, the RAG report text, the numbered sources, a per-citation overlap flag (same 0.5 threshold as the citation check), validation flags, provenance and warnings. It leaves out the true label, the prompts and the config. It does not load models, does not call Ollama, and works only on flows the pipeline has already written for rows of the saved test set; it does not classify live traffic. It refuses to overwrite an existing alert unless `--force` is given.
+
+```powershell
+uv run python -m ids_rag.alert --index 0
+```
+
+Limits of the alert: the citation flag is a word-overlap heuristic. In the committed sample (flow 0) the sentence calling the attack "a sub-technique of T1498.001" is not flagged (overlap 0.778), although the cited chunk lists T1498.001 as a sub-technique of Network Denial of Service, and the report names only 2 of the 5 top features. The alert marks the second problem but cannot detect the first. It does not check whether the advice is correct.
+
 ## Frozen knowledge base
 
 The knowledge base was frozen before evaluation: NIST SP 800-61 Rev 2 (withdrawn by NIST on 3 April 2025; used because the paper uses it), NIST SP 800-94, NIST SP 800-30 Rev 1 chapters 1 to 3 (an addition not in the paper's list), and MITRE ATT&CK T1498, T1498.001 and T1499. It contains 742 chunks of at most 350 tokens with 200-token overlap. Hashes are in `data/kb/KB_MANIFEST.md`, and a copy is in `backup/kb_frozen` (git-ignored).
@@ -82,7 +90,7 @@ Aggregates and the blind citation audit:
 uv run python artifacts\eval\aggregate.py
 uv run python artifacts\eval\audit_sheet_v2.py        # writes sheet, key and rubric; refuses to overwrite
 uv run python artifacts\eval\audit_score_v2.py --out artifacts\eval\audit_results_v2.txt
-uv run pytest -q                                      # 105 tests
+uv run pytest -q                                      # 128 tests
 ```
 
 Retrieval and report-quality evaluation live in `ids_rag.eval.retrieval` and `ids_rag.eval.report_quality` Recorded runs: `uv run python -m ids_rag.eval.retrieval` and `uv run python -m ids_rag.eval.report_quality` (no flags; `--no-bert` skips BERTScore).
