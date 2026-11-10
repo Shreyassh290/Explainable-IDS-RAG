@@ -37,7 +37,7 @@ Dataset: the 10 processed CICIDS2018 CSVs from the public CSE-CIC-IDS2018 bucket
 - `src/ids_rag/rag/` chunking, index, retrieve, manifest
 - `src/ids_rag/llm/` prompt and generate
 - `src/ids_rag/pipeline.py` end-to-end inference
-- `src/ids_rag/eval/` classification, flow selection, retrieval, report quality
+- `src/ids_rag/eval/` classification, flow selection, retrieval, report quality, citation check
 - `data/kb/` frozen knowledge base (documents, chunks.jsonl, KB_MANIFEST.md with hashes)
 - `data/eval/` retrieval queries and the three reference reports
 - `artifacts/eval/` evaluation outputs, audit sheet, key, rubric and results
@@ -122,7 +122,7 @@ Query 11 (slow-rate attacks that hold web server connections open) is the one fa
 
 Overall 12 of 36 citations (33%) fully supported, 29 of 36 (81%) at least partly. By source: NIST 3 of 9 yes, MITRE 9 of 27 yes. ATT&CK ids in the audited sample: 3 of 3 correct (all from two DoS reports; the sample has no DDoS id rows). The paper reports citation presence rates (NIST 93.3%, MITRE 86.7%), not whether citations support their sentences, so the two are not directly comparable.
 
-**Citation check (extension, annotation only).** The Phase 1 reports are not regenerated. A post-processing check flags each inline citation as "unverified" when the word overlap between its sentence and the cited chunk is below 0.5 (`citation_check.overlap_threshold` in `config.yaml`). Copied source-header lines are skipped, as in report generation. The checker reproduces all 36 manually audited rows (36 of 36 matched, maximum overlap difference 0.0). The checker script and its outputs currently sit in `scratch\` (git-ignored), not in the tracked source.
+**Citation check (extension, annotation only).** The Phase 1 reports are not regenerated. A post-processing check flags each inline citation as "unverified" when the word overlap between its sentence and the cited chunk is below 0.5 (`citation_check.overlap_threshold` in `config.yaml`). Copied source-header lines are skipped, as in report generation. The checker reproduces all 36 manually audited rows (36 of 36 matched, maximum overlap difference 0.0). The checker is `src/ids_rag/eval/citation_check.py` (tests in `tests/test_citation_check.py`). Run it with `uv run python -m ids_rag.eval.citation_check --self-check`; it writes `citation_check_rows.csv`, `citation_check_per_report.csv` and `citation_check_summary.txt` to `artifacts/eval/citation_check/` and refuses to overwrite existing files. It was ported from an earlier scratch script, and its two CSV outputs are byte-identical to that script run.
 
 Descriptive result over all 30 RAG reports: 68 of 106 unique citations (64.2%) are flagged, and none cites a chunk outside the retrieved list. By true class: Benign 9 of 9, DoS 35 of 57, DDoS 24 of 40. By source: NIST 12 of 18, MITRE 56 of 88. In the 10 audited flows 20 of 36 are flagged; in the other 20 flows 48 of 70 (68.6%).
 

@@ -1,0 +1,63 @@
+RAG reports in flow_summary.csv: 30 (expected 30)
+overlap threshold from config.yaml: 0.5
+
+per report (RAG): flow  class  citations  flagged  out_of_range  mean_overlap
+    8136  DDoS      2    0    0  0.65
+   10045  Benign    2    2    0  0.0871
+   10400  Benign    1    1    0  0.25
+   10947  Benign    0    0    0  
+   19603  DDoS      1    0    0  0.875
+   22251  DoS       2    1    0  0.4722
+   24001  Benign    0    0    0  
+   32906  DDoS      2    0    0  0.6587
+   42388  DDoS      5    5    0  0.2061
+   44644  DoS      10    7    0  0.411
+   48490  DoS       3    0    0  0.7146
+   51486  Benign    2    2    0  0.2667
+   52197  Benign    0    0    0  
+   53167  DDoS      2    0    0  0.65
+   54212  DoS       5    4    0  0.4211
+   60238  DoS       7    7    0  0.1859
+   65622  DoS       6    4    0  0.3935
+   75521  DDoS      7    5    0  0.3066
+   77292  DoS       4    1    0  0.5609
+   77790  Benign    1    1    0  0.0833
+   83014  Benign    1    1    0  0.1818
+   83734  DDoS      7    6    0  0.2234
+   90411  DDoS      2    1    0  0.4727
+   92199  Benign    0    0    0  
+   93707  DoS       9    6    0  0.3526
+   98556  DoS       7    5    0  0.3711
+  102543  Benign    2    2    0  0.1511
+  106513  DDoS      6    3    0  0.4236
+  110886  DoS       4    0    0  0.7
+  115902  DDoS      6    4    0  0.4728
+copied source-header lines skipped (same rule as generate.py): 5 (expected 5)
+
+reports with at least one citation: 26 of 30 (expected 26)
+reports with a list or range citation: 5 (expected 5)
+unique citation rows: 106; flagged unverified: 68 (64.2%); outside retrieved list: 0
+overlap over scored citations: mean 0.388, median 0.333
+
+by true class: citations / flagged
+  Benign    9 / 9
+  DoS      57 / 35
+  DDoS     40 / 24
+by cited source family: citations / flagged
+  NIST     18 / 12
+  MITRE    88 / 56
+
+SELF-CHECK against the 36 audited rows (labels used here only)
+  audited flows: 10 (expected 10)
+  audit sheet citation rows: 36 (expected 36)
+  checker rows in those flows: 36 (expected 36)
+  matched on (flow, sentence, number): 36; sheet rows not found by checker: []
+  checker rows with no sheet row: 0
+  at threshold 0.5: citations kept (overlap >= threshold) by manual label
+    yes      kept 11 of 12
+    partial  kept 5 of 17
+    no       kept 0 of 7
+
+Caveats: the flag is a word-overlap heuristic, not a verdict. It was informed by the 36 audited rows,
+so those rows cannot test it. Overlap separated 'yes' from 'partial+no' (AUC 0.94) but not 'partial'
+from 'no' (AUC 0.71). A flagged citation means 'not clearly supported by the chunk', nothing stronger.
