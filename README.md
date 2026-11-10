@@ -26,7 +26,7 @@ ollama pull llama3:8b
 
 Embeddings (`sentence-transformers/all-mpnet-base-v2`) and the reranker (`cross-encoder/ms-marco-MiniLM-L-6-v2`) download from Hugging Face on first use. After they are cached, set `$env:HF_HUB_OFFLINE = "1"` for runs and unset it for downloads.
 
-Dataset: the 10 processed CICIDS2018 CSVs from the public CSE-CIC-IDS2018 bucket on AWS (about 6.4 GB, 16.2M rows) go in `data/raw/`. Only the Tuesday file contains IP addresses.
+Dataset: the 10 processed CICIDS2018 CSVs from the public CSE-CIC-IDS2018 bucket on AWS (16,233,002 rows in total according to `artifacts\data_inspection.json`; the download size was not recorded) go in `data/raw/`. Only the Tuesday file contains IP addresses.
 
 ## Repository layout
 
@@ -72,7 +72,7 @@ Select the 30 evaluation flows (10 per class, seed 42, seven tuning rows exclude
 uv run python -m ids_rag.eval.select_flows            # refuses to overwrite without --force
 ```
 
-Options: `--test-path`, `--label-map-path`, `--out-path`, `--seed`, `--per-class`, `--exclude-rows` (default: the `eval.exclude_rows` list in `config.yaml`, which is 0, 3, 4, 637, 100, 2500, 60000), `--force`. The saved file differs between runs only in its `created_at` timestamp.
+Options: `--test-path`, `--label-map-path`, `--out-path`, `--seed`, `--per-class`, `--exclude-rows` (default: the `eval.exclude_rows` list in `config.yaml`, which is 0, 3, 4, 637, 100, 2500, 60000), `--force`. The saved selection `artifacts\eval\eval_flows.json` is identical to the copy in `backup\eval_snapshot.zip`, including its `created_at` timestamp (2026-11-09T10:09:23 UTC).
 
 Generate RAG and vanilla reports for the 30 flows: Recorded run: `uv run python -m ids_rag.eval.select_flows` (seed 42, 10 flows per class, exclusions taken from `config.yaml`), then `uv run python -m ids_rag.pipeline --indices-file artifacts\eval\eval_flows.json --mode both --out-dir artifacts\eval\flows --summary-csv artifacts\eval\flow_summary.csv` (17.86 minutes wall time; 30 flows run, 0 skipped, 0 failed). Config used for that run: `artifacts/eval/config_used_for_eval_run.yaml` (identical to the current `config.yaml`).
 
