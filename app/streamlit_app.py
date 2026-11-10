@@ -6,11 +6,8 @@ targeted knowledge base retrieval, and LLM-assisted incident response reporting.
 
 from __future__ import annotations
 
-import csv
-import io
+import hashlib
 import json
-import os
-import shutil
 import sys
 import time
 import uuid
@@ -54,6 +51,23 @@ def load_preset_samples() -> list[dict[str, Any]]:
     return []
 
 
+def get_features_fingerprint(features: dict[str, Any]) -> str:
+    """Return first 12 hex chars of SHA-1 over JSON of features ignoring 'Label'."""
+    cleaned = {
+        str(k): str(v)
+        for k, v in features.items()
+        if str(k) != "Label"
+    }
+    dumped = json.dumps(cleaned, sort_keys=True)
+    return hashlib.sha1(dumped.encode("utf-8")).hexdigest()[:12]
+
+
+@st.cache_data(ttl=10)
+def check_ollama_cached(cfg: dict[str, Any]) -> Any:
+    """Check Ollama connectivity cached with 10s TTL."""
+    return check_ollama(cfg)
+
+
 # ---------------------------------------------------------------------------
 # Streamlit App Layout
 # ---------------------------------------------------------------------------
@@ -62,14 +76,13 @@ def load_preset_samples() -> list[dict[str, Any]]:
 def main() -> None:
     st.set_page_config(
         page_title="IDS-RAG Incident Response",
-        page_icon="🛡️",
         layout="wide",
         initial_sidebar_state="expanded",
     )
 
-    st.title("🛡️ Explainable IDS-RAG Mitigation Pipeline")
+    st.title("Explainable IDS-RAG Mitigation Pipeline")
     st.caption(
-        "Network Intrusion Detection (CICIDS2018) + Gradient Attribution + "
+        "Network Intrusion Detection (CICIDS2018) + Feature Attribution + "
         "RAG-Augmented Incident Response (NIST / MITRE ATT&CK)"
     )
 
@@ -83,6 +96,14 @@ def main() -> None:
 
     # Sidebar: Flow Input Configuration
     st.sidebar.header("1. Flow Input Selection")
+
+    # Ollama reachability status
+    try:
+        check_ollama_cached(cfg)
+        st.sidebar.markdown("<span style='color: green;'>Ollama: reachable</span>", unsafe_allow_html=True)
+    except Exception:
+        st.sidebar.markdown("<span style='color: red;'>Ollama: unreachable</span>", unsafe_allow_html=True)
+
     input_source = st.sidebar.radio(
         "Input Mode:",
         ["Preset Benchmark Samples", "Upload Raw Flow CSV", "Custom Feature Input"],
@@ -92,6 +113,7 @@ def main() -> None:
     flow_meta: dict[str, Any] = {}
     sample_dataset_label: str | None = None
     input_identifier = "custom_flow"
+    source_label = "custom input"
 
     preset_samples = load_preset_samples()
 
@@ -107,6 +129,7 @@ def main() -> None:
             flow_meta = chosen_sample.get("metadata", {})
             sample_dataset_label = chosen_sample.get("dataset_label")
             input_identifier = f"preset_idx_{chosen_sample['index']}"
+            source_label = chosen_name
 
             st.sidebar.info(
                 f"**Dataset label:** `{sample_dataset_label}`\n\n"
@@ -132,6 +155,7 @@ def main() -> None:
                 )
                 selected_row = df_upload.iloc[int(row_idx)]
                 flow_features = selected_row.to_dict()
+                source_label = f"uploaded row {row_idx}"
 
                 # Extract meta if present
                 for meta_col in ["Src IP", "Dst IP", "Src Port", "Dst Port", "Protocol", "Timestamp"]:
@@ -152,7 +176,7 @@ def main() -> None:
             st.sidebar.info("Upload a file or test with `app/raw_samples.csv`.")
 
     else:  # Custom Feature Input
-        st.sidebar.markdown("Use default median values or edit key features:")
+        st.sidebar.markdown("Starts from test row 0 (a DDoS flow) with three features editable.")
         sample_row = ctx.df_test.iloc[0][ctx.feature_names].to_numpy(dtype=np.float32)
         sample_raw = ctx.scaler.inverse_transform(sample_row.reshape(1, -1))[0]
         flow_features = dict(zip(ctx.feature_names, sample_raw.tolist()))
@@ -169,6 +193,7 @@ def main() -> None:
             "Flow Duration", value=float(flow_features["Flow Duration"]), min_value=0.0
         )
         input_identifier = "interactive_manual"
+        source_label = "custom input"
 
     # Sidebar: Generation Settings
     st.sidebar.header("2. Generation Options")
@@ -179,16 +204,10 @@ def main() -> None:
         help="Loads pre-generated LLM reports from artifacts/demo_cache/ without calling Ollama.",
     )
 
-    run_button = st.sidebar.button("🚀 Analyze Flow & Generate Report", type="primary")
-
-    # Main Area Tabs
-    tab_overview, tab_explanation, tab_sources, tab_report = st.tabs(
-        ["📊 Prediction Overview", "🔍 Attribution & Features", "📚 Retrieved Sources", "📝 Incident Report"]
-    )
+    run_button = st.sidebar.button("Analyze Flow & Generate Report", type="primary")
 
     if not flow_features:
-        with tab_overview:
-            st.info("Select a sample flow or upload a CSV in the sidebar to begin analysis.")
+        st.info("Select a sample flow or upload a CSV in the sidebar to begin analysis.")
         return
 
     # Check for caching directory
@@ -197,24 +216,29 @@ def main() -> None:
     demo_cache_dir.mkdir(parents=True, exist_ok=True)
     demo_runs_dir.mkdir(parents=True, exist_ok=True)
 
-    cache_key = f"{input_identifier}_{mode_option}.json"
+    fingerprint = get_features_fingerprint(flow_features)
+    cache_key = f"{input_identifier}_{fingerprint}_{mode_option}.json"
     cache_path = demo_cache_dir / cache_key
 
     # Execute or Load
-    summary: dict[str, Any] | None = None
-
     if run_button:
         # Check if cache is requested and available
         if use_cached_report and cache_path.exists():
             with st.spinner("Loading cached demonstration report..."):
                 with open(cache_path, "r", encoding="utf-8") as f:
                     summary = json.load(f)
+            st.session_state["flow_summary"] = summary
+            st.session_state["flow_input_id"] = input_identifier
+            st.session_state["flow_mode"] = mode_option
+            st.session_state["flow_dataset_label"] = sample_dataset_label
+            st.session_state["flow_fingerprint"] = fingerprint
+            st.session_state["flow_source_label"] = source_label
             st.success("Loaded pre-computed report from demo cache.")
         else:
             timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             unique_run_id = f"demo_{timestamp_str}_{uuid.uuid4().hex[:6]}"
 
-            with st.spinner("Running detection ensemble, gradient attribution, and RAG generation..."):
+            with st.spinner("Running detection ensemble, feature attribution, and RAG generation..."):
                 t_start = time.perf_counter()
                 try:
                     summary = run_flow(
@@ -228,6 +252,12 @@ def main() -> None:
                         out_dir=demo_runs_dir,
                     )
                     elapsed = time.perf_counter() - t_start
+                    st.session_state["flow_summary"] = summary
+                    st.session_state["flow_input_id"] = input_identifier
+                    st.session_state["flow_mode"] = mode_option
+                    st.session_state["flow_dataset_label"] = sample_dataset_label
+                    st.session_state["flow_fingerprint"] = fingerprint
+                    st.session_state["flow_source_label"] = source_label
                     st.success(f"Analysis completed in {elapsed:.2f}s (run ID: `{unique_run_id}`).")
 
                     # Save to cache if caching is enabled
@@ -241,6 +271,43 @@ def main() -> None:
     elif use_cached_report and cache_path.exists():
         with open(cache_path, "r", encoding="utf-8") as f:
             summary = json.load(f)
+        st.session_state["flow_summary"] = summary
+        st.session_state["flow_input_id"] = input_identifier
+        st.session_state["flow_mode"] = mode_option
+        st.session_state["flow_dataset_label"] = sample_dataset_label
+        st.session_state["flow_fingerprint"] = fingerprint
+        st.session_state["flow_source_label"] = source_label
+
+    stored_summary = st.session_state.get("flow_summary")
+    stored_fingerprint = st.session_state.get("flow_fingerprint")
+    stored_mode = st.session_state.get("flow_mode")
+    stored_source_label = st.session_state.get("flow_source_label")
+    stored_dataset_label = st.session_state.get("flow_dataset_label")
+
+    selection_changed = False
+    if stored_summary is not None:
+        if stored_fingerprint == fingerprint and stored_mode == mode_option:
+            summary = stored_summary
+            active_dataset_label = stored_dataset_label
+            active_mode = stored_mode
+            active_source_label = stored_source_label
+        else:
+            summary = None
+            selection_changed = True
+    else:
+        summary = None
+        active_dataset_label = sample_dataset_label
+        active_mode = mode_option
+        active_source_label = source_label
+
+    # Small caption above the results
+    if summary is not None:
+        st.caption(f"Showing result for: {active_source_label}")
+
+    # Main Area Tabs
+    tab_overview, tab_explanation, tab_sources, tab_report = st.tabs(
+        ["Prediction Overview", "Attribution & Features", "Retrieved Sources", "Incident Report"]
+    )
 
     # Display Results if Available
     if summary is not None:
@@ -253,29 +320,23 @@ def main() -> None:
             st.subheader("Ensemble Classification Result")
             col1, col2, col3 = st.columns(3)
 
-            tier_colors = {
-                "VERY_HIGH": "🟢",
-                "HIGH": "🟡",
-                "MEDIUM": "🟠",
-                "LOW": "🔴",
-            }
-
             with col1:
                 st.metric("Predicted Threat Category", pred_class)
             with col2:
                 st.metric("Model Confidence", f"{confidence:.4f}")
             with col3:
-                st.metric("Confidence Tier", f"{tier_colors.get(tier, '⚪')} {tier}")
+                st.metric("Confidence Tier", tier)
 
-            if sample_dataset_label:
-                st.caption(f"ℹ️ **Ground truth metadata** (from source dataset): `{sample_dataset_label}`")
+            if active_dataset_label:
+                st.caption(f"**Ground truth metadata** (from source dataset): `{active_dataset_label}`")
 
             st.markdown("---")
             st.subheader("Pipeline Execution Timings")
             timings = summary.get("timings", {})
-            t_cols = st.columns(len(timings))
-            for c, (k, v) in zip(t_cols, timings.items()):
-                c.metric(k.capitalize(), f"{v:.3f}s")
+            if timings:
+                t_cols = st.columns(len(timings))
+                for c, (k, v) in zip(t_cols, timings.items()):
+                    c.metric(k.capitalize(), f"{v:.3f}s")
 
         # TAB 2: Attribution & Features
         with tab_explanation:
@@ -290,7 +351,11 @@ def main() -> None:
                             "Rank": idx + 1,
                             "Feature Name": f["name"],
                             "Observed Value": f["original_value"],
-                            "Impact Direction": "Raises Risk ⬆️" if f.get("direction") == "raises" else "Lowers Risk ⬇️",
+                            "Impact Direction": (
+                                "Raises predicted-class score"
+                                if f.get("direction") == "raises"
+                                else "Lowers predicted-class score"
+                            ),
                             "Attribution Score": round(float(f.get("importance", 0.0)), 6),
                         }
                         for idx, f in enumerate(features_list)
@@ -311,9 +376,7 @@ def main() -> None:
             has_fallbacks = any(c.get("is_fallback") for c in chunks) or len(chunks) > 5
             if has_fallbacks:
                 st.warning(
-                    "📌 **Note on Fallback Sources:** "
-                    "Sources with CE score = 0 or rank > 5 are fallback mitigation chunks, "
-                    "injected automatically to ensure minimum guideline coverage."
+                    "Chunks with a re-ranking score of 0.0000 are shown exactly as the retriever returned them; they appear to be fallback entries."
                 )
 
             if chunks:
@@ -328,7 +391,7 @@ def main() -> None:
                             "Source Document": c.get("source", ""),
                             "Section": c.get("section", ""),
                             "Re-ranking Score (CE)": ce_str,
-                            "Fallback Chunk": "Yes ⚠️" if is_fb else "No",
+                            "Fallback Chunk": "Yes" if is_fb else "No",
                         }
                     )
                 st.dataframe(pd.DataFrame(sources_data), use_container_width=True, hide_index=True)
@@ -340,8 +403,8 @@ def main() -> None:
             reports = summary.get("reports", {})
             validations = summary.get("validation", {})
 
-            if mode_option == "both" and "rag" in reports and "vanilla" in reports:
-                subtab_rag, subtab_vanilla = st.tabs(["🛡️ RAG Mitigation Report", "📄 Vanilla LLM Report"])
+            if active_mode == "both" and "rag" in reports and "vanilla" in reports:
+                subtab_rag, subtab_vanilla = st.tabs(["RAG Mitigation Report", "Vanilla LLM Report"])
                 with subtab_rag:
                     st.markdown(reports["rag"])
                     st.divider()
@@ -351,7 +414,7 @@ def main() -> None:
                     st.divider()
                     render_validation_summary(validations.get("vanilla", {}))
             else:
-                chosen_mode = "rag" if "rag" in reports else list(reports.keys())[0] if reports else "rag"
+                chosen_mode = active_mode if active_mode in reports else ("rag" if "rag" in reports else list(reports.keys())[0] if reports else "rag")
                 if chosen_mode in reports:
                     st.markdown(reports[chosen_mode])
                     st.divider()
@@ -361,15 +424,19 @@ def main() -> None:
 
     else:
         with tab_overview:
-            st.info("Click **'🚀 Analyze Flow & Generate Report'** in the sidebar to run the analysis.")
+            if selection_changed:
+                st.info("Selection changed. Click Analyze Flow & Generate Report to run this flow.")
+            else:
+                st.info("Click **'Analyze Flow & Generate Report'** in the sidebar to run the analysis.")
 
     # Footer Disclaimer
     st.markdown("---")
     st.markdown(
         "<div style='text-align: center; color: #888; font-size: 0.85em;'>"
-        "⚠️ <strong>Disclaimer:</strong> Automated Incident Response Demonstration. "
+        "<strong>Disclaimer:</strong> Automated Incident Response Demonstration. "
         "Generated for security analyst advisory purposes only. "
-        "All mitigation guidelines and firewall policies must be reviewed by security personnel before deployment."
+        "All mitigation guidelines must be reviewed by security personnel before deployment. "
+        "LLM-generated. Models trained on CICIDS2018, 3 classes only."
         "</div>",
         unsafe_allow_html=True,
     )
@@ -377,10 +444,11 @@ def main() -> None:
 
 def render_validation_summary(v: dict[str, Any]) -> None:
     """Render report validation metrics cleanly in Streamlit."""
-    st.markdown("#### Automated Report Quality & Compliance Checks")
+    st.markdown("#### Format checks")
+    st.caption("Confirms that cited numbers exist among the retrieved sources. Does not verify that a source supports the sentence.")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Word Count", f"{v.get('word_count', 0)} (Valid: {v.get('words_in_range')})")
+        st.metric("Word Count", f"{v.get('word_count', 0)} (In range: {v.get('words_in_range')})")
     with col2:
         h_found = sum(1 for val in v.get("headings_found", {}).values() if val)
         st.metric("Required Headings", f"{h_found}/5")
