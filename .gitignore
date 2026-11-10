@@ -29,5 +29,8 @@ models/*
 # KB index artifacts
 data/kb/index/
 
+# Demo run logs
+artifacts/demo_runs/
+
 scratch/
 backup/
