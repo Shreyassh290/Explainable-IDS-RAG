@@ -122,6 +122,22 @@ Query 11 (slow-rate attacks that hold web server connections open) is the one fa
 
 Overall 12 of 36 citations (33%) fully supported, 29 of 36 (81%) at least partly. By source: NIST 3 of 9 yes, MITRE 9 of 27 yes. ATT&CK ids in the audited sample: 3 of 3 correct (all from two DoS reports; the sample has no DDoS id rows). The paper reports citation presence rates (NIST 93.3%, MITRE 86.7%), not whether citations support their sentences, so the two are not directly comparable.
 
+**Citation check (extension, annotation only).** The Phase 1 reports are not regenerated. A post-processing check flags each inline citation as "unverified" when the word overlap between its sentence and the cited chunk is below 0.5 (`citation_check.overlap_threshold` in `config.yaml`). Copied source-header lines are skipped, as in report generation. The checker reproduces all 36 manually audited rows (36 of 36 matched, maximum overlap difference 0.0). The checker script and its outputs currently sit in `scratch\` (git-ignored), not in the tracked source.
+
+Descriptive result over all 30 RAG reports: 68 of 106 unique citations (64.2%) are flagged, and none cites a chunk outside the retrieved list. By true class: Benign 9 of 9, DoS 35 of 57, DDoS 24 of 40. By source: NIST 12 of 18, MITRE 56 of 88. In the 10 audited flows 20 of 36 are flagged; in the other 20 flows 48 of 70 (68.6%).
+
+Against the 36 audit judgments, kept (not flagged) at 0.5 were yes 11 of 12, partial 5 of 17, no 0 of 7. AUC of the overlap score is about 0.94 for yes versus partial+no and about 0.71 for yes+partial versus no. The threshold was chosen with these rows in view, so they cannot validate it.
+
+Blind check on 16 further rows from 8 unaudited flows (B01 to B08: 8 DoS, 4 DDoS, 4 Benign rows). The sheet hid overlap, flags and class.
+
+| Judgment | Rows | Kept | Flagged |
+|---|---|---|---|
+| yes | 7 | 6 | 1 |
+| partial | 5 | 1 | 4 |
+| no | 4 | 0 | 4 |
+
+8 of 9 flagged rows were partial or no, and 6 of 7 kept rows were yes. AUC was 0.905 for yes versus partial+no and 0.979 for yes+partial versus no (the latter rests on only 4 "no" rows). A flag means "not clearly supported by the chunk", not "wrong". The score separates fully supported citations from the rest but does not reliably separate partial from no. This is a first check on a small sample, not a validation.
+
 **RAG versus vanilla quality (BERTScore, ROUGE, BLEU, paired Wilcoxon with Holm correction).** No reliable difference. BERTScore F1 0.8610 (RAG) against 0.8617 (vanilla), a difference of -0.0006 (RAG higher on 12 of 30 flows, lower on 18); every Holm-adjusted p is 0.526 or higher. ROUGE-1 and ROUGE-2 are slightly higher for RAG (+2.7% and +7.1% relative) and ROUGE-L and BLEU slightly lower, none significant. The three class references are shared by 10 flows each, so the 30 pairs are not independent. The paper reports large gains (for example BERTScore F1 +4.4%, ROUGE-2 +126.4%). This result is not reproduced here.
 
 Overlap diagnostic: 6.7% of RAG report trigrams appear in the retrieved chunks, against 1.6% for vanilla, and 15 of 30 RAG reports copy an 8-word span. The three reference reports share 21%, 29% and 30% of their trigrams with the knowledge base (Benign, DoS, DDoS) and contain verbatim 8-word spans from it, so they are not independent of the retrieved text (see Limitations).
@@ -138,6 +154,7 @@ Overlap diagnostic: 6.7% of RAG report trigrams appear in the retrieved chunks, 
 - Repeat test (9 Nov 2026, files in backup\reports_run_a): 8 report files (Benign, DoS, DDoS and one misclassified case, each RAG and vanilla) were generated three times; 6 of 8 were byte-identical across all three runs, and runs 2 and 3 matched each other in 8 of 8. The options recorded for that test were llama3:8b, temperature 0.2, seed 42, num_ctx 8192 and num_predict 1100. The two differing sets are the misclassified case, where run 1 differs from runs 2 and 3; the cause was not investigated. Reproducibility was not re-measured on the 30-flow evaluation set, so identical output on a rerun is not guaranteed.
 - Model files: the Benign classifier was accidentally retrained on 10 Nov 2026 (a looped `--help` call started a real training run). The retrained `models\dnn_Benign.pt` is byte-identical to the file evaluated earlier (hash recorded before the evaluation run in `artifacts\eval\hashes_at_eval.txt`), and rerunning the classification step gave 0 of 119,454 predictions different. The original Benign training history and curves were overwritten, so the files in `artifacts\` are the regenerated ones. SHA-256 hashes of the model and key data files are in `MODEL_MANIFEST.md`.
 - ATT&CK technique names were checked against the knowledge base only for T1498, T1498.001, T1499 and T1499.001. Seven id-naming reports outside the audit sample were read but not formally scored. The BERTScore layer choice (distilroberta-base, layer 5) is the author's.
+- The citation flag is a word-overlap heuristic, not a verdict. Its threshold was chosen with the 36 audited rows in view. The blind check covers 16 rows from 8 flows, judged by one scorer who built the system, with partial blinding and clustered rows. The other 20 blind rows (B09 to B16) are unscored.
 
 ## Future work
 
