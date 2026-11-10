@@ -282,7 +282,11 @@ def validate_raw_features(
             "such values are not supported at inference time."
         )
 
-    scaled = scaler.transform(arr.reshape(1, -1))[0]
+    df_features = pd.DataFrame([arr], columns=feature_names)
+    scaled = scaler.transform(df_features)
+    if hasattr(scaled, "to_numpy"):
+        scaled = scaled.to_numpy()
+    scaled = np.asarray(scaled)[0]
     return scaled.astype(np.float32)
 
 
