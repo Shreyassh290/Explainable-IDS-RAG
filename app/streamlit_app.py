@@ -26,6 +26,7 @@ sys.path.insert(0, str(repo_root / "src"))
 
 from ids_rag.config import get_project_root, load_config
 from ids_rag.llm.generate import check_ollama
+from ids_rag.pdf_report import build_pdf
 from ids_rag.pipeline import PipelineContext, run_flow
 
 
@@ -421,6 +422,23 @@ def main() -> None:
                     render_validation_summary(validations.get(chosen_mode, {}))
                 else:
                     st.info("Report generation was skipped or not requested.")
+
+        # PDF Download Button
+        pdf_summary = st.session_state.get("flow_summary", summary)
+        pdf_source = st.session_state.get("flow_source_label", active_source_label)
+        pdf_input_id = st.session_state.get("flow_input_id", input_identifier)
+
+        st.markdown("---")
+        try:
+            pdf_bytes = build_pdf(pdf_summary, source_label=pdf_source)
+            st.download_button(
+                label="Download PDF report",
+                data=pdf_bytes,
+                file_name=f"incident_report_{pdf_input_id}.pdf",
+                mime="application/pdf",
+            )
+        except Exception as e:
+            st.error(f"Failed to generate PDF report: {e}")
 
     else:
         with tab_overview:
