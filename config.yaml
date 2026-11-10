@@ -117,4 +117,9 @@ eval:
   exclude_rows: [0, 3, 4, 637, 100, 2500, 60000]
   flows_file: "artifacts/eval/eval_flows.json"
 
+citation_check:
+  # A citation is flagged unverified when its word overlap with the cited chunk is below this value.
+  # Fixed on 10 Nov 2026 before any rerun. Informed by the 36 audited rows, so those rows cannot validate it.
+  overlap_threshold: 0.5
+
 
