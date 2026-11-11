@@ -306,8 +306,8 @@ def main() -> None:
         st.caption(f"Showing result for: {active_source_label}")
 
     # Main Area Tabs
-    tab_overview, tab_explanation, tab_sources, tab_report = st.tabs(
-        ["Prediction Overview", "Attribution & Features", "Retrieved Sources", "Incident Report"]
+    tab_overview, tab_explanation, tab_sources, tab_report, tab_performance = st.tabs(
+        ["Prediction Overview", "Attribution & Features", "Retrieved Sources", "Incident Report", "Model Performance"]
     )
 
     # Display Results if Available
@@ -446,6 +446,14 @@ def main() -> None:
                 st.info("Selection changed. Click Analyze Flow & Generate Report to run this flow.")
             else:
                 st.info("Click **'Analyze Flow & Generate Report'** in the sidebar to run the analysis.")
+
+    # TAB 5: Model Performance (graphs from saved evaluation artifacts)
+    with tab_performance:
+        if str(app_dir) not in sys.path:
+            sys.path.insert(0, str(app_dir))
+        from performance_tab import render_performance_tab
+
+        render_performance_tab(repo_root)
 
     # Footer Disclaimer
     st.markdown("---")
