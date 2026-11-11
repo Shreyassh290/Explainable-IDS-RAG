@@ -9,6 +9,7 @@ Tests run entirely in-memory with small synthetic fixtures:
 6. main refuses to overwrite existing files and exits with code 1, leaving files intact.
 """
 
+import json
 from pathlib import Path
 import pytest
 
@@ -20,6 +21,7 @@ from ids_rag.eval.citation_check import (
     form_of,
     main,
     overlap_score,
+    run_citation_check,
     split_units,
     tokens,
 )
@@ -174,4 +176,162 @@ def test_output_refusal(tmp_path: Path) -> None:
     assert summary_file.read_text(encoding="utf-8") == "pre-existing content"
     assert not (tmp_path / "citation_check_rows.csv").exists()
     assert not (tmp_path / "citation_check_per_report.csv").exists()
+
+
+def test_reports_dir_mode(tmp_path: Path) -> None:
+    """Test citation check scoring on a custom reports folder with tuned-run layout."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    kb_dir = tmp_path / "data" / "kb"
+    kb_dir.mkdir(parents=True)
+    chunks_file = kb_dir / "chunks.jsonl"
+    chunk_data = {
+        "chunk_id": "chunk_001",
+        "source_name": "NIST_SP_800-61_Rev2.pdf",
+        "text": "Organizations should apply network ingress filtering and firewall access controls to prevent denial of service.",
+    }
+    chunks_file.write_text(json.dumps(chunk_data) + "\n", encoding="utf-8")
+
+    # Flow 1: valid citation [1] with high overlap and out-of-range citation [9]
+    flow1_resp = "Apply network ingress filtering and firewall access controls [1]. Additional unverified step [9]."
+    flow1_json = {
+        "flow_id": 1,
+        "true_class": "DoS",
+        "predicted_class": "DoS",
+        "response": flow1_resp,
+        "prompt": {
+            "sources": [
+                {
+                    "n": 1,
+                    "chunk_id": "chunk_001",
+                    "source_name": "NIST_SP_800-61_Rev2.pdf",
+                }
+            ]
+        },
+    }
+    (reports_dir / "flow_1_rag.txt").write_text(flow1_resp, encoding="utf-8")
+    (reports_dir / "flow_1_rag.json").write_text(json.dumps(flow1_json), encoding="utf-8")
+
+    # Flow 2: copied header line and no real citation
+    flow2_resp = "[1] NIST SP 800-94, section 3.2.3 Detection Capabilities\nNormal operational traffic observed with no threats detected."
+    flow2_json = {
+        "flow_id": 2,
+        "true_class": "Benign",
+        "predicted_class": "Benign",
+        "response": flow2_resp,
+        "prompt": {
+            "sources": [
+                {
+                    "n": 1,
+                    "chunk_id": "chunk_001",
+                    "source_name": "NIST_SP_800-94.pdf",
+                }
+            ]
+        },
+    }
+    (reports_dir / "flow_2_rag.txt").write_text(flow2_resp, encoding="utf-8")
+    (reports_dir / "flow_2_rag.json").write_text(json.dumps(flow2_json), encoding="utf-8")
+
+    cfg = {"citation_check": {"overlap_threshold": 0.5}}
+    out_dir = tmp_path / "out"
+
+    res = run_citation_check(
+        root=tmp_path,
+        out_dir=out_dir,
+        reports_dir=reports_dir,
+        cfg=cfg,
+    )
+
+    # 1. Check citation rows counted correctly
+    assert len(res["all_rows"]) == 2
+    assert len(res["per_report"]) == 2
+    # Flow 1 has 2 citations, Flow 2 has 0 citations
+    p1 = next(p for p in res["per_report"] if p["flow_index"] == "1")
+    p2 = next(p for p in res["per_report"] if p["flow_index"] == "2")
+    assert p1["citations"] == 2
+    assert p2["citations"] == 0
+
+    # 2. Check header line skipped
+    assert res["hdr_total"] == 1
+    assert "copied source-header lines skipped (same rule as generate.py): 1 (expected n/a)" in res["summary_text"]
+    assert "(expected 5)" not in res["summary_text"]
+
+    # 3. Check out-of-range citation flagged
+    row_c1 = next(r for r in res["all_rows"] if r["n"] == 1)
+    row_c9 = next(r for r in res["all_rows"] if r["n"] == 9)
+    assert row_c1["out_of_range"] is False
+    assert row_c1["flagged"] is False
+    assert row_c1["overlap"] is not None and row_c1["overlap"] >= 0.5
+    assert row_c9["out_of_range"] is True
+    assert row_c9["flagged"] is True
+
+    # Check generated files exist
+    assert (out_dir / "citation_check_rows.csv").exists()
+    assert (out_dir / "citation_check_per_report.csv").exists()
+    assert (out_dir / "citation_check_summary.txt").exists()
+
+
+def test_reports_dir_existing_output_refused(tmp_path: Path) -> None:
+    """Test that existing output in --out-dir is refused when --reports-dir is used."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+    out_dir = tmp_path / "out"
+    out_dir.mkdir(parents=True)
+    summary_file = out_dir / "citation_check_summary.txt"
+    summary_file.write_text("existing summary", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(["--reports-dir", str(reports_dir), "--out-dir", str(out_dir)])
+    assert exc_info.value.code == 1
+    assert summary_file.read_text(encoding="utf-8") == "existing summary"
+
+
+def test_reports_dir_missing_out_dir_rejected(tmp_path: Path) -> None:
+    """Test that missing --out-dir is rejected when --reports-dir is provided."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(["--reports-dir", str(reports_dir)])
+    assert exc_info.value.code == 1
+
+
+def test_reports_dir_missing_file_or_sources_rejected(tmp_path: Path) -> None:
+    """Test that missing flow JSON or sources list triggers clear STOP message."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+    kb_dir = tmp_path / "data" / "kb"
+    kb_dir.mkdir(parents=True)
+    (kb_dir / "chunks.jsonl").write_text('{"chunk_id": "c1", "source_name": "NIST_X.pdf", "section": "S", "text": "hello"}\n', encoding="utf-8")
+
+    # Flow with missing sources list in prompt
+    bad_json = {
+        "flow_id": 1,
+        "true_class": "DoS",
+        "predicted_class": "DoS",
+        "response": "Text [1]",
+        "prompt": {},
+    }
+    (reports_dir / "flow_1_rag.json").write_text(json.dumps(bad_json), encoding="utf-8")
+
+    cfg = {"citation_check": {"overlap_threshold": 0.5}}
+    with pytest.raises(SystemExit) as exc_info:
+        run_citation_check(
+            root=tmp_path,
+            out_dir=tmp_path / "out",
+            reports_dir=reports_dir,
+            cfg=cfg,
+        )
+    assert exc_info.value.code == 1
+
+
+def test_phase1_default_path_unchanged() -> None:
+    """Test that Phase 1 default output path is artifacts/eval/citation_check when --reports-dir is None."""
+    from ids_rag.config import get_project_root
+
+    root = get_project_root()
+    default_out = root / "artifacts" / "eval" / "citation_check"
+    assert default_out.name == "citation_check"
+    assert default_out.parent.name == "eval"
 
