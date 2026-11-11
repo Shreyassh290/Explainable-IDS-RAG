@@ -335,3 +335,67 @@ def test_phase1_default_path_unchanged() -> None:
     assert default_out.name == "citation_check"
     assert default_out.parent.name == "eval"
 
+
+def test_reports_dir_phase1_layout(tmp_path: Path) -> None:
+    """Test citation check scoring on a reports folder holding flow_<id>.json in Phase 1 layout."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    kb_dir = tmp_path / "data" / "kb"
+    kb_dir.mkdir(parents=True)
+    chunks_file = kb_dir / "chunks.jsonl"
+    chunk_data = {
+        "chunk_id": "chunk_001",
+        "source": "NIST_SP_800-61",
+        "text": "Organizations should apply network ingress filtering and firewall access controls to prevent denial of service.",
+    }
+    chunks_file.write_text(json.dumps(chunk_data) + "\n", encoding="utf-8")
+
+    # One report with a copied header line and one valid [1] citation
+    rag_text = (
+        "[1] NIST SP 800-94, section 3.2.3 Detection Capabilities\n"
+        "Organizations should apply network ingress filtering and firewall access controls [1]."
+    )
+    flow1_json = {
+        "index": 1,
+        "true_class": "DoS",
+        "predicted_class": "DoS",
+        "retrieved_chunks": [
+            {
+                "chunk_id": "chunk_001",
+                "source": "NIST_SP_800-61",
+            }
+        ],
+        "report_texts": {
+            "rag": rag_text,
+            "vanilla": "Baseline text without citations.",
+        },
+    }
+    (reports_dir / "flow_1.json").write_text(json.dumps(flow1_json), encoding="utf-8")
+
+    cfg = {"citation_check": {"overlap_threshold": 0.5}}
+    out_dir = tmp_path / "out"
+
+    res = run_citation_check(
+        root=tmp_path,
+        out_dir=out_dir,
+        reports_dir=reports_dir,
+        cfg=cfg,
+    )
+
+    # Check row count: 1 valid citation row
+    assert len(res["all_rows"]) == 1
+    assert res["all_rows"][0]["n"] == 1
+    assert res["all_rows"][0]["out_of_range"] is False
+    assert res["all_rows"][0]["flagged"] is False
+    assert res["all_rows"][0]["overlap"] is not None and res["all_rows"][0]["overlap"] >= 0.5
+
+    # Check header line skipped
+    assert res["hdr_total"] == 1
+
+    # Check per_report summary
+    assert len(res["per_report"]) == 1
+    assert res["per_report"][0]["flow_index"] == "1"
+    assert res["per_report"][0]["citations"] == 1
+
+

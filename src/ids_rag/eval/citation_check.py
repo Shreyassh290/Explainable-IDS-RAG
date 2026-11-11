@@ -334,9 +334,13 @@ def run_citation_check(
 
         flow_ids_set: set[str] = set()
         for p in reports_dir.iterdir():
-            m = re.match(r"^flow_(.+)_rag\.(?:json|txt)$", p.name)
-            if m:
-                flow_ids_set.add(m.group(1))
+            m_rag = re.match(r"^flow_(.+)_rag\.json$", p.name)
+            if m_rag:
+                flow_ids_set.add(m_rag.group(1))
+                continue
+            m_plain = re.match(r"^flow_(\d+)\.json$", p.name)
+            if m_plain:
+                flow_ids_set.add(m_plain.group(1))
 
         if not flow_ids_set:
             print(f"STOP: missing flow files in: {reports_dir}", file=sys.stderr)
@@ -351,37 +355,63 @@ def run_citation_check(
         out(f"overlap threshold from config.yaml: {thr}")
 
         for idx in flow_ids:
-            fj = reports_dir / f"flow_{idx}_rag.json"
-            if not fj.exists():
-                print(f"STOP: missing file: {fj}", file=sys.stderr)
-                sys.exit(1)
-            with open(fj, "r", encoding="utf-8") as fh:
-                j = json.load(fh)
+            fj_rag = reports_dir / f"flow_{idx}_rag.json"
+            if fj_rag.exists():
+                with open(fj_rag, "r", encoding="utf-8") as fh:
+                    j = json.load(fh)
 
-            prompt_obj = j.get("prompt")
-            sources = prompt_obj.get("sources") if isinstance(prompt_obj, dict) else None
-            if sources is None or not isinstance(sources, list):
-                print(f"STOP: missing sources list in {fj}", file=sys.stderr)
-                sys.exit(1)
-
-            report_text = j.get("response")
-            if report_text is None:
-                rp = reports_dir / f"flow_{idx}_rag.txt"
-                if rp.exists():
-                    report_text = rp.read_text(encoding="utf-8")
-                else:
-                    print(f"STOP: missing response in {fj}", file=sys.stderr)
+                prompt_obj = j.get("prompt")
+                sources = prompt_obj.get("sources") if isinstance(prompt_obj, dict) else None
+                if sources is None or not isinstance(sources, list):
+                    print(f"STOP: missing sources list in {fj_rag}", file=sys.stderr)
                     sys.exit(1)
 
-            true_class = j.get("true_class", "")
-            predicted_class = j.get("predicted_class", "")
+                report_text = j.get("response")
+                if report_text is None:
+                    rp = reports_dir / f"flow_{idx}_rag.txt"
+                    if rp.exists():
+                        report_text = rp.read_text(encoding="utf-8")
+                    else:
+                        print(f"STOP: missing response in {fj_rag}", file=sys.stderr)
+                        sys.exit(1)
 
-            retrieved = []
-            for s in sources:
-                item = dict(s)
-                if "source" not in item:
-                    item["source"] = item.get("source_name", item.get("source_ref", ""))
-                retrieved.append(item)
+                true_class = j.get("true_class", "")
+                predicted_class = j.get("predicted_class", "")
+
+                retrieved = []
+                for s in sources:
+                    item = dict(s)
+                    if "source" not in item:
+                        item["source"] = item.get("source_name", item.get("source_ref", ""))
+                    retrieved.append(item)
+            else:
+                fj_plain = reports_dir / f"flow_{idx}.json"
+                if not fj_plain.exists():
+                    print(f"STOP: missing file: {fj_plain}", file=sys.stderr)
+                    sys.exit(1)
+                with open(fj_plain, "r", encoding="utf-8") as fh:
+                    j = json.load(fh)
+
+                report_texts = j.get("report_texts")
+                if report_texts is None or not isinstance(report_texts, dict) or "rag" not in report_texts:
+                    print(f"STOP: missing report_texts in {fj_plain}", file=sys.stderr)
+                    sys.exit(1)
+
+                retrieved_chunks = j.get("retrieved_chunks")
+                if retrieved_chunks is None or not isinstance(retrieved_chunks, list):
+                    print(f"STOP: missing retrieved_chunks in {fj_plain}", file=sys.stderr)
+                    sys.exit(1)
+
+                report_text = report_texts["rag"]
+                true_class = j.get("true_class", "")
+                predicted_class = j.get("predicted_class", "")
+
+                retrieved = []
+                for s in retrieved_chunks:
+                    item = dict(s)
+                    if "source" not in item:
+                        item["source"] = item.get("source_name", item.get("source_ref", ""))
+                    retrieved.append(item)
 
             body, n_hdr = drop_header_lines(report_text)
             hdr_total += n_hdr
