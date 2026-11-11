@@ -1,0 +1,102 @@
+{
+  "flow_id": 32906,
+  "true_class": "DDoS",
+  "predicted_class": "DDoS",
+  "mode": "rag",
+  "model": "llama3:8b",
+  "options": {
+    "temperature": 0.2,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 1100
+  },
+  "seed_used": 42,
+  "prompt": {
+    "system": "You are a senior cybersecurity analyst writing a structured incident response report.\n\nRules you must follow exactly:\n1. Use exactly five numbered section headings: 1. Rationale  2. Key Indicators  3. Confidence Assessment  4. Threat Assessment  5. Recommendations. Write the heading number, a period, a space, then the section name. No other format.\n2. Distinguish clearly: (a) observed network-flow evidence; (b) model prediction and confidence score; (c) possible interpretation; (d) recommended action. Never state that an observed feature value alone proves an attack occurred.\n3. STRICT FACTUAL GROUNDING \u2014 NO ATTACK MECHANISM HALLUCINATIONS:\n   - Base all statements strictly on the single flow's observed features and metadata provided.\n   - An ensemble classification (e.g. 'DDoS' or 'DoS') is a statistical label, NOT empirical evidence of network-wide behavior.\n   - DO NOT claim, infer, or assume the presence of botnets, multiple attacking hosts, distributed agents, high traffic volume, flooding rates, or network saturation UNLESS the observed feature values in this prompt explicitly show extreme packet counts, extreme byte volumes, or multiple source endpoints.\n   - When influential features are described as 'near the training average' (or show small packet/byte counts), you MUST explicitly state that this individual flow does not exhibit volumetric flooding or high packet rates on its own.\n4. KEY INDICATORS: In Section 2, explain every one of the 5 features listed in [KEY ANOMALOUS INDICATORS]. State each feature's exact name, observed value, z-score position, and direction. If a feature is near the training average, state that it does not by itself indicate an attack. Do not omit any feature.\n5. RAG CITATION PLACEMENT & GROUNDING RULES:\n   - Place citation brackets ONLY at the end of the specific sentence or mitigation step they support (e.g. 'Apply ingress filtering at border routers [2].').\n   - NEVER place a bracketed number [N] at the beginning of a line or bullet.\n   - NEVER copy or reproduce retrieved source headers (such as '[1] MITRE ATT&CK...' or '[2] NIST SP...').\n   - Never write citation ranges like [1-3] and never invent citation numbers.\n   - CITE ONLY WHAT THE SOURCE ACTUALLY STATES: An attack description chunk (e.g. explaining what an adversary does) does NOT support a mitigation recommendation unless that chunk explicitly details that mitigation procedure.\n   - If a recommendation or statement is based on standard operational practice rather than a direct instruction from one of the listed sources, write '(general precaution)' instead of citing a source number.\n6. Do not invent IP addresses, ports, protocol numbers, MITRE ATT&CK technique IDs, NIST document section numbers, or infrastructure details not present in the prompt. Do not add a References or Sources section at the end.\n7. If the predicted class is Benign, the report must not describe any attack. State that no attack was detected and explain which features are consistent with normal traffic.\n8. Target length: write between 350 and 500 words (strict requirement: between 300 and 600 words total). Ensure every section contains substantive analysis so the total length does not fall below 300 words. Do not pad with filler sentences.",
+    "user": "[DETECTION CONTEXT]\n  Attack class: DDoS\n  Confidence: 1.0000 (Very High: fully automated response)\n  Dataset: CICIDS2018\n\n[NETWORK FLOW METADATA]\n  Flow ID: 172.31.69.25-18.219.9.1-80-57374-6\n  Timestamp: 20/02/2018 11:02:09\n  Source: 18.219.9.1:57374\n  Destination: 172.31.69.25:80\n  Protocol: TCP (6)\n\n[KEY ANOMALOUS INDICATORS]\n  Top-5 features most influential in this decision (K = 5):\n  Feature 1: Flow Pkts/s = 0.0823 (near the training average; effect on the DDoS score: lowers)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 2: Init Fwd Win Byts = 2049 (moderately below the training average; effect on the DDoS score: lowers)\n     -> Anomalous or absent forward window values can flag scanning or attack tools.\n  Feature 3: Idle Mean = 24300000 (moderately above the training average; effect on the DDoS score: raises)\n     -> Mean idle interval duration; reflects pause behavior between packet bursts.\n  Feature 4: Protocol = 6 (near the training average; effect on the DDoS score: raises)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 5: ACK Flag Cnt = 1 (moderately above the training average; effect on the DDoS score: raises)\n     -> Elevated ACK count is consistent with established connections under high-rate interaction.\n  Use a feature's meaning only when the observed value fits it; if a value is near the training average, say that it does not by itself indicate an attack.\n\n[RETRIEVED KNOWLEDGE CONTEXT]\n[1] MITRE ATT&CK T1498.001, section Description\nNetwork Denial of Service: Direct Network Flood Other sub-techniques of Network Denial of Service (2) ID Name T1498.001 Direct Network Flood T1498.002 Reflection Amplification Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of network traffic to a target. This DoS attack may also reduce the availability and functionality of the targeted system(s) and network. Direct Network Flood s are when one or more systems are used to send a high-volume of network packets towards the targeted service's network. Almost any network protocol may be used for flooding. Stateless protocols such as UDP or ICMP are commonly used but stateful protocols such as TCP can be used as well. Botnets are commonly used to conduct network flooding attacks against networks and services. Large botnets can generate a significant amount of traffic from systems spread across the global Internet. Adversaries may have the resources to build out and control their own botnet infrastructure or may rent time on an existing botnet to conduct an attack. In some of the worst cases for distributed DoS (DDoS), so many systems are used to generate the flood that each one only needs to send out a small amount of traffic to produce enough volume to saturate the target network. In such circumstances, distinguishing DDoS traffic from legitimate clients becomes exceedingly difficult. Botnets have been used in some of the most high-profile DDoS flooding attacks, such as the 2012 series of incidents that targeted major US banks. ID: T1498.001 Sub-technique of: T1498 Tactic: Impact Platforms: IaaS, Linux, Windows, macOS\n\n[2] MITRE ATT&CK T1498, section Description\nNetwork Denial of Service Sub-techniques (2) ID Name T1498.001 Direct Network Flood T1498.002 Reflection Amplification Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability of targeted resources to users. Network DoS can be performed by exhausting the network bandwidth services rely on. Example resources include specific websites, email services, DNS, and web-based applications. Adversaries have been observed conducting network DoS attacks for political purposes and to support other malicious activities, including distraction , hacktivism, and extortion. A Network DoS will occur when the bandwidth capacity of the network connection to a system is exhausted due to the volume of malicious traffic directed at the resource or the network connections and network devices the resource relies on. For example, an adversary may send 10Gbps of traffic to a server that is hosted by a network with a 1Gbps connection to the internet. This traffic can be generated by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS). To perform Network DoS attacks several aspects apply to multiple methods, including IP address spoofing, and botnets. Adversaries may use the original IP address of an attacking system, or spoof the source IP address to make the attack traffic more difficult to trace back to the attacking system or to enable reflection. This can increase the difficulty defenders have in defending against the attack by reducing or eliminating the effectiveness of filtering by the source address on network defense devices. For DoS attacks targeting the hosting system directly, see Endpoint Denial of Service . ID: T1498\n\n[3] MITRE ATT&CK T1499, section Description\nEndpoint Denial of Service Sub-techniques (4) ID Name T1499.001 OS Exhaustion Flood T1499.002 Service Exhaustion Flood T1499.003 Application Exhaustion Flood T1499.004 Application or System Exploitation Adversaries may perform Endpoint Denial of Service (DoS) attacks to degrade or block the availability of services to users. Endpoint DoS can be performed by exhausting the system resources those services are hosted on or exploiting the system to cause a persistent crash condition. Example services include websites, email services, DNS, and web-based applications. Adversaries have been observed conducting DoS attacks for political purposes and to support other malicious activities, including distraction , hacktivism, and extortion. An Endpoint DoS denies the availability of a service without saturating the network used to provide access to the service. Adversaries can target various layers of the application stack that is hosted on the system used to provide the service. These layers include the Operating Systems (OS), server applications such as web servers, DNS servers, databases, and the (typically web-based) applications that sit on top of them. Attacking each layer requires different techniques that take advantage of bottlenecks that are unique to the respective components. A DoS attack may be generated by a single system or multiple systems spread across the internet, which is commonly referred to as a distributed DoS (DDoS). To perform DoS attacks against endpoint resources, several aspects apply to multiple methods, including IP address spoofing and botnets.\n\n[4] MITRE ATT&CK T1498, section Procedure Examples\nID Name Description G0007 APT28 In 2016, APT28 conducted a distributed denial of service (DDoS) attack against the World Anti-Doping Agency. S0532 Lucifer Lucifer can execute TCP, UDP, and HTTP denial of service (DoS) attacks. S1107 NKAbuse NKAbuse enables multiple types of network denial of service capabilities across several protocols post-installation.\n\n[5] MITRE ATT&CK T1498.001, section Description\nBotnets are commonly used to conduct network flooding attacks against networks and services. Large botnets can generate a significant amount of traffic from systems spread across the global Internet. Adversaries may have the resources to build out and control their own botnet infrastructure or may rent time on an existing botnet to conduct an attack. In some of the worst cases for distributed DoS (DDoS), so many systems are used to generate the flood that each one only needs to send out a small amount of traffic to produce enough volume to saturate the target network. In such circumstances, distinguishing DDoS traffic from legitimate clients becomes exceedingly difficult. Botnets have been used in some of the most high-profile DDoS flooding attacks, such as the 2012 series of incidents that targeted major US banks. ID: T1498.001 Sub-technique of: T1498 Tactic: Impact Platforms: IaaS, Linux, Windows, macOS Impact Type: Availability Version: 1.4 Created: 02 March 2020 Last Modified: 24 October 2025\n\nCite a source by writing its number in square brackets after the statement it supports. Cite only the numbers listed above, one number per bracket, never a range, and do not add a reference list at the end. Use a source only if it supports the statement. If no listed source supports a recommendation, say so instead of inventing a citation.\n\n[REPORT REQUEST]\n  Write a structured report with exactly these five sections:\n  1. Rationale\n     State what the model detected, the numeric confidence score, and the confidence tier action.\n  2. Key Indicators\n     Explain ALL 5 features listed in [KEY ANOMALOUS INDICATORS]. For each feature: name, observed value, position relative to average, effect direction, and what that means for this flow. If a feature is near the training average, state that it does not by itself indicate an attack.\n  3. Confidence Assessment\n     Interpret the numeric confidence and tier. Acknowledge uncertainty if confidence is below VERY_HIGH.\n  4. Threat Assessment\n     Describe the likely threat based strictly on observed flow evidence versus statistical model inference. Do not claim botnet involvement, high traffic volume, or flooding unless the numeric features directly support it.\n  5. Recommendations\n     Provide 3 to 5 actionable mitigation steps proportional to the detected threat and confidence level.\n     If a step is supported by a retrieved source, put the citation at the end of the sentence (e.g. 'Action description [1].').\n     NEVER start a recommendation line with [N] or with source titles. If a step is a general precaution not described in the sources, write '(general precaution)' instead of a citation.\n  Write between 300 and 600 words in total (target 350\u2013500 words), using the five section headings exactly as numbered above.",
+    "sources": [
+      {
+        "n": 1,
+        "source_name": "MITRE_T1498_001.html",
+        "source_ref": "T1498.001",
+        "section": "Description",
+        "chunk_id": "9abd9022-6223-4f45-a3b9-817cb1890ff7",
+        "is_fallback": false
+      },
+      {
+        "n": 2,
+        "source_name": "MITRE_T1498.html",
+        "source_ref": "T1498",
+        "section": "Description",
+        "chunk_id": "91578269-f044-46f4-8438-39cc1fe61419",
+        "is_fallback": false
+      },
+      {
+        "n": 3,
+        "source_name": "MITRE_T1499.html",
+        "source_ref": "T1499",
+        "section": "Description",
+        "chunk_id": "a1bd92f1-83cf-4fd8-a848-1fb58dbc79b2",
+        "is_fallback": false
+      },
+      {
+        "n": 4,
+        "source_name": "MITRE_T1498.html",
+        "source_ref": "T1498",
+        "section": "Procedure Examples",
+        "chunk_id": "2fcc607b-b1bc-4693-b9a2-90aeab41eadf",
+        "is_fallback": false
+      },
+      {
+        "n": 5,
+        "source_name": "MITRE_T1498_001.html",
+        "source_ref": "T1498.001",
+        "section": "Description",
+        "chunk_id": "0220d9f2-1432-4dcf-881f-181cff8ad4a8",
+        "is_fallback": false
+      }
+    ],
+    "mode": "rag"
+  },
+  "response": "1. Rationale\nThe model detected a DDoS attack with a confidence score of 1.0000, indicating a VERY_HIGH confidence tier action. This detection is based on the observed flow metadata and the statistical model's prediction.\n\n2. Key Indicators\nFeature 1: Flow Pkts/s = 0.0823 (near the training average; effect on the DDoS score: lowers)\nThis feature's value is near the training average, indicating that it does not by itself indicate an attack. The low packet rate suggests that this flow is not contributing to a volumetric flooding attack.\n\nFeature 2: Init Fwd Win Byts = 2049 (moderately below the training average; effect on the DDoS score: lowers)\nThe observed value is moderately below the training average, which may flag scanning or attack tools. However, this feature alone does not indicate an attack.\n\nFeature 3: Idle Mean = 24300000 (moderately above the training average; effect on the DDoS score: raises)\nThe mean idle interval duration is moderately above the training average, reflecting pause behavior between packet bursts. This feature's elevated value contributes to the DDoS detection.\n\nFeature 4: Protocol = 6 (near the training average; effect on the DDoS score: raises)\nThe observed protocol value is near the training average, indicating that it does not by itself indicate an attack. The presence of TCP protocol does not necessarily imply an attack.\n\nFeature 5: ACK Flag Cnt = 1 (moderately above the training average; effect on the DDoS score: raises)\nThe elevated ACK count is consistent with established connections under high-rate interaction. This feature's value contributes to the DDoS detection.\n\n3. Confidence Assessment\nThe model's confidence score of 1.0000 indicates a VERY_HIGH confidence tier action. While there is no uncertainty in the detection, it is essential to acknowledge that the confidence score is based on statistical predictions and may not reflect the actual attack scenario.\n\n4. Threat Assessment\nThe likely threat is a potential DDoS attack, as indicated by the observed flow evidence. The elevated idle mean and ACK flag count suggest a possible attempt to saturate the target network. However, the low packet rate and moderate initial forward window bytes do not support a volumetric flooding attack.\n\n5. Recommendations\nTo mitigate this potential DDoS attack, the following steps can be taken:\n\n* Apply ingress filtering at border routers [2] to block suspicious traffic.\n* Implement rate limiting on the target network to prevent excessive traffic [1].\n* Monitor network traffic and adjust filtering rules as needed to prevent further attacks.\n\nThese recommendations are based on the detected threat and confidence level, and are designed to prevent further attacks and minimize network disruption.",
+  "validation": {
+    "word_count": 430,
+    "headings_found": {
+      "Rationale": true,
+      "Key Indicators": true,
+      "Confidence Assessment": true,
+      "Threat Assessment": true,
+      "Recommendations": true
+    },
+    "headings_any": {
+      "Rationale": true,
+      "Key Indicators": true,
+      "Confidence Assessment": true,
+      "Threat Assessment": true,
+      "Recommendations": true
+    },
+    "headings_any_count": 5,
+    "words_in_range": true,
+    "cited": [
+      1,
+      2
+    ],
+    "cited_in_copied_headers": [],
+    "copied_source_headers": 0,
+    "invalid_citations": [],
+    "citations_in_vanilla": [],
+    "unsupported_ips": [],
+    "placeholder_citations": 0,
+    "citation_ranges": [],
+    "has_reference_list": false,
+    "attack_ids_not_in_kb": [],
+    "kb_attack_ids_named": [],
+    "sp_not_in_kb": [],
+    "kb_sp_named": []
+  },
+  "timings": {
+    "total_duration": 13.4626505,
+    "eval_count": 571,
+    "tokens_per_second": 47.74974118135034
+  }
+}

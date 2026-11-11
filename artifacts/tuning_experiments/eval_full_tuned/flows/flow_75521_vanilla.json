@@ -1,0 +1,58 @@
+{
+  "flow_id": 75521,
+  "true_class": "DDoS",
+  "predicted_class": "DDoS",
+  "mode": "vanilla",
+  "model": "llama3:8b",
+  "options": {
+    "temperature": 0.2,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 1100
+  },
+  "seed_used": 42,
+  "prompt": {
+    "system": "You are a senior cybersecurity analyst writing a structured incident response report.\n\nRules you must follow exactly:\n1. Use exactly five numbered section headings: 1. Rationale  2. Key Indicators  3. Confidence Assessment  4. Threat Assessment  5. Recommendations. Write the heading number, a period, a space, then the section name. No other format.\n2. Distinguish clearly: (a) observed network-flow evidence; (b) model prediction and confidence score; (c) possible interpretation; (d) recommended action. Never state that an observed feature value alone proves an attack occurred.\n3. STRICT FACTUAL GROUNDING \u2014 NO ATTACK MECHANISM HALLUCINATIONS:\n   - Base all statements strictly on the single flow's observed features and metadata provided.\n   - An ensemble classification (e.g. 'DDoS' or 'DoS') is a statistical label, NOT empirical evidence of network-wide behavior.\n   - DO NOT claim, infer, or assume the presence of botnets, multiple attacking hosts, distributed agents, high traffic volume, flooding rates, or network saturation UNLESS the observed feature values in this prompt explicitly show extreme packet counts, extreme byte volumes, or multiple source endpoints.\n   - When influential features are described as 'near the training average' (or show small packet/byte counts), you MUST explicitly state that this individual flow does not exhibit volumetric flooding or high packet rates on its own.\n4. KEY INDICATORS: In Section 2, explain every one of the 5 features listed in [KEY ANOMALOUS INDICATORS]. State each feature's exact name, observed value, z-score position, and direction. If a feature is near the training average, state that it does not by itself indicate an attack. Do not omit any feature.\n5. VANILLA MODE CITATION PROHIBITION:\n   - This report is running in ungrounded baseline (Vanilla) mode with NO retrieved knowledge sources.\n   - Do NOT output any bracketed numbers (such as [1], [2], or [n]) anywhere in the report.\n   - Do NOT reference source numbers or cite NIST or MITRE documents as retrieved sources.\n   - All recommendations must be presented as general operational security practices without citations.\n6. Do not invent IP addresses, ports, protocol numbers, MITRE ATT&CK technique IDs, NIST document section numbers, or infrastructure details not present in the prompt. Do not add a References or Sources section at the end.\n7. If the predicted class is Benign, the report must not describe any attack. State that no attack was detected and explain which features are consistent with normal traffic.\n8. Target length: write between 350 and 500 words (strict requirement: between 300 and 600 words total). Ensure every section contains substantive analysis so the total length does not fall below 300 words. Do not pad with filler sentences.",
+    "user": "[DETECTION CONTEXT]\n  Attack class: DDoS\n  Confidence: 1.0000 (Very High: fully automated response)\n  Dataset: CICIDS2018\n\n[NETWORK FLOW METADATA]\n  Flow ID: not available\n  Timestamp: 21/02/2018 02:13:49\n  Source: not available\n  Destination: not available\n  Protocol: TCP (6)\n\n[KEY ANOMALOUS INDICATORS]\n  Top-5 features most influential in this decision (K = 5):\n  Feature 1: Fwd Seg Size Min = 20 (near the training average; effect on the DDoS score: lowers)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 2: RST Flag Cnt = 1 (far above the training average; effect on the DDoS score: raises)\n     -> Elevated RST count can indicate aborted or refused connections during active sessions.\n  Feature 3: Init Fwd Win Byts = 65540 (far above the training average; effect on the DDoS score: lowers)\n     -> Anomalous or absent forward window values can flag scanning or attack tools.\n  Feature 4: Tot Fwd Pkts = 3 (near the training average; effect on the DDoS score: raises)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Feature 5: Tot Bwd Pkts = 4 (near the training average; effect on the DDoS score: lowers)\n     -> This value is near the training average, so it does not by itself indicate an attack.\n  Use a feature's meaning only when the observed value fits it; if a value is near the training average, say that it does not by itself indicate an attack.\n\n[RETRIEVED KNOWLEDGE CONTEXT]\n\n[REPORT REQUEST]\n  Write a structured report with exactly these five sections:\n  1. Rationale\n     State what the model detected, the numeric confidence score, and the confidence tier action.\n  2. Key Indicators\n     Explain ALL 5 features listed in [KEY ANOMALOUS INDICATORS]. For each feature: name, observed value, position relative to average, effect direction, and what that means for this flow. If a feature is near the training average, state that it does not by itself indicate an attack.\n  3. Confidence Assessment\n     Interpret the numeric confidence and tier. Acknowledge uncertainty if confidence is below VERY_HIGH.\n  4. Threat Assessment\n     Describe the likely threat based strictly on observed flow evidence versus statistical model inference. Do not claim botnet involvement, high traffic volume, or flooding unless the numeric features directly support it.\n  5. Recommendations\n     Provide 3 to 5 actionable mitigation steps proportional to the detected threat and confidence level based on general cybersecurity practices.\n     Do NOT include any citations, bracketed numbers, or source references in this ungrounded mode.\n  Write between 300 and 600 words in total (target 350\u2013500 words), using the five section headings exactly as numbered above.",
+    "sources": [],
+    "mode": "vanilla"
+  },
+  "response": "1. Rationale\nThe model detected a DDoS attack with a confidence score of 1.0000, indicating a VERY HIGH confidence level. This confidence tier suggests a fully automated response. The model's prediction is based on the observed features and metadata provided.\n\n2. Key Indicators\nFeature 1: Fwd Seg Size Min = 20 (near the training average; effect on the DDoS score: lowers)\nThis feature's value is near the training average, indicating normal traffic. The low effect on the DDoS score suggests that this feature does not contribute significantly to the attack detection.\n\nFeature 2: RST Flag Cnt = 1 (far above the training average; effect on the DDoS score: raises)\nThe elevated RST flag count indicates aborted or refused connections during active sessions, which can be a sign of an attack. This feature's value is far above the training average, contributing positively to the DDoS score.\n\nFeature 3: Init Fwd Win Byts = 65540 (far above the training average; effect on the DDoS score: lowers)\nThe anomalous or absent forward window values can flag scanning or attack tools. This feature's value is far above the training average, contributing negatively to the DDoS score.\n\nFeature 4: Tot Fwd Pkts = 3 (near the training average; effect on the DDoS score: raises)\nThis feature's value is near the training average, indicating normal traffic. The positive effect on the DDoS score suggests that this feature does not contribute significantly to the attack detection.\n\nFeature 5: Tot Bwd Pkts = 4 (near the training average; effect on the DDoS score: lowers)\nThis feature's value is near the training average, indicating normal traffic. The negative effect on the DDoS score suggests that this feature does not contribute significantly to the attack detection.\n\n3. Confidence Assessment\nThe model's confidence score of 1.0000 indicates a VERY HIGH confidence level, suggesting a fully automated response. This level of confidence is typically associated with high accuracy and reliability.\n\n4. Threat Assessment\nBased on the observed flow evidence, the likely threat is a potential DDoS attack. The elevated RST flag count and anomalous forward window values suggest that the attack may be attempting to disrupt or saturate the network. However, without further evidence, it is impossible to determine the scope or scale of the attack.\n\n5. Recommendations\nTo mitigate this potential DDoS attack, the following steps can be taken:\n\n* Implement rate limiting and traffic shaping to control the flow of traffic and prevent saturation.\n* Monitor network traffic and system performance to detect and respond to any anomalies.\n* Implement security controls, such as firewalls and intrusion detection systems, to block and detect malicious traffic.\n\nThese recommendations are based on general cybersecurity practices and are intended to provide a proportional response to the detected threat and confidence level.",
+  "validation": {
+    "word_count": 458,
+    "headings_found": {
+      "Rationale": true,
+      "Key Indicators": true,
+      "Confidence Assessment": true,
+      "Threat Assessment": true,
+      "Recommendations": true
+    },
+    "headings_any": {
+      "Rationale": true,
+      "Key Indicators": true,
+      "Confidence Assessment": true,
+      "Threat Assessment": true,
+      "Recommendations": true
+    },
+    "headings_any_count": 5,
+    "words_in_range": true,
+    "cited": [],
+    "cited_in_copied_headers": [],
+    "copied_source_headers": 0,
+    "invalid_citations": [],
+    "citations_in_vanilla": [],
+    "unsupported_ips": [],
+    "placeholder_citations": 0,
+    "citation_ranges": [],
+    "has_reference_list": false,
+    "attack_ids_not_in_kb": [],
+    "kb_attack_ids_named": [],
+    "sp_not_in_kb": [],
+    "kb_sp_named": []
+  },
+  "timings": {
+    "total_duration": 12.8789013,
+    "eval_count": 602,
+    "tokens_per_second": 49.723160932727204
+  }
+}

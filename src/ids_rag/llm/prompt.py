@@ -136,11 +136,64 @@ def build_prompt(
         cfg = load_config()
     llm_cfg = cfg.get("llm", {})
 
+    min_words = int(llm_cfg.get("min_words", 400))
+    max_words = int(llm_cfg.get("max_words", 500))
+    prompt_version = str(llm_cfg.get("prompt_version", "baseline")).lower()
+    is_tuned = prompt_version in ("tuned", "v2")
+
+    features = explanation.get("features", [])
+    k_features = len(features)
+
     # 1. System Prompt (identical across modes)
-    system_text = (
-        "You are a senior cybersecurity analyst. Generate a structured incident response report based on the evidence provided. "
-        "Cite NIST Special Publications and MITRE ATT&CK techniques explicitly where applicable."
-    )
+    if is_tuned:
+        if mode == "rag":
+            mode_citation_rules = (
+                "5. RAG CITATION PLACEMENT & GROUNDING RULES:\n"
+                "   - Place citation brackets ONLY at the end of the specific sentence or mitigation step they support (e.g. 'Apply ingress filtering at border routers [2].').\n"
+                "   - NEVER place a bracketed number [N] at the beginning of a line or bullet.\n"
+                "   - NEVER copy or reproduce retrieved source headers (such as '[1] MITRE ATT&CK...' or '[2] NIST SP...').\n"
+                "   - Never write citation ranges like [1-3] and never invent citation numbers.\n"
+                "   - CITE ONLY WHAT THE SOURCE ACTUALLY STATES: An attack description chunk (e.g. explaining what an adversary does) does NOT support a mitigation recommendation unless that chunk explicitly details that mitigation procedure.\n"
+                "   - If a recommendation or statement is based on standard operational practice rather than a direct instruction from one of the listed sources, write '(general precaution)' instead of citing a source number."
+            )
+        else:
+            mode_citation_rules = (
+                "5. VANILLA MODE CITATION PROHIBITION:\n"
+                "   - This report is running in ungrounded baseline (Vanilla) mode with NO retrieved knowledge sources.\n"
+                "   - Do NOT output any bracketed numbers (such as [1], [2], or [n]) anywhere in the report.\n"
+                "   - Do NOT reference source numbers or cite NIST or MITRE documents as retrieved sources.\n"
+                "   - All recommendations must be presented as general operational security practices without citations."
+            )
+
+        system_text = (
+            "You are a senior cybersecurity analyst writing a structured incident response report.\n\n"
+            "Rules you must follow exactly:\n"
+            "1. Use exactly five numbered section headings: 1. Rationale  2. Key Indicators  "
+            "3. Confidence Assessment  4. Threat Assessment  5. Recommendations. "
+            "Write the heading number, a period, a space, then the section name. No other format.\n"
+            "2. Distinguish clearly: (a) observed network-flow evidence; (b) model prediction and confidence score; "
+            "(c) possible interpretation; (d) recommended action. "
+            "Never state that an observed feature value alone proves an attack occurred.\n"
+            "3. STRICT FACTUAL GROUNDING — NO ATTACK MECHANISM HALLUCINATIONS:\n"
+            "   - Base all statements strictly on the single flow's observed features and metadata provided.\n"
+            "   - An ensemble classification (e.g. 'DDoS' or 'DoS') is a statistical label, NOT empirical evidence of network-wide behavior.\n"
+            "   - DO NOT claim, infer, or assume the presence of botnets, multiple attacking hosts, distributed agents, high traffic volume, flooding rates, or network saturation UNLESS the observed feature values in this prompt explicitly show extreme packet counts, extreme byte volumes, or multiple source endpoints.\n"
+            "   - When influential features are described as 'near the training average' (or show small packet/byte counts), you MUST explicitly state that this individual flow does not exhibit volumetric flooding or high packet rates on its own.\n"
+            f"4. KEY INDICATORS: In Section 2, explain every one of the {k_features} features listed in [KEY ANOMALOUS INDICATORS]. "
+            "State each feature's exact name, observed value, z-score position, and direction. If a feature is near the training average, state that it does not by itself indicate an attack. Do not omit any feature.\n"
+            f"{mode_citation_rules}\n"
+            "6. Do not invent IP addresses, ports, protocol numbers, MITRE ATT&CK technique IDs, NIST document section numbers, or infrastructure details not present in the prompt. Do not add a References or Sources section at the end.\n"
+            "7. If the predicted class is Benign, the report must not describe any attack. State that no attack was detected and explain which features are consistent with normal traffic.\n"
+            f"8. Target length: write between 350 and 500 words (strict requirement: between {min_words} and {max_words} words total). Ensure every section contains substantive analysis so the total length does not fall below {min_words} words. Do not pad with filler sentences."
+        )
+    else:
+        system_text = (
+            "You are a senior cybersecurity analyst. Generate a structured incident response report based on the evidence provided. "
+            "Cite NIST Special Publications and MITRE ATT&CK techniques explicitly where applicable."
+        )
+
+    if "system_prompt_override" in llm_cfg and llm_cfg["system_prompt_override"]:
+        system_text = str(llm_cfg["system_prompt_override"])
 
     # 2. Detection Context
     pred_class = str(explanation.get("predicted_class", "Benign"))
@@ -279,24 +332,56 @@ def build_prompt(
         retrieved_section = "\n".join(retrieved_lines)
 
     # 6. Report Request
-    min_words = int(llm_cfg.get("min_words", 400))
-    max_words = int(llm_cfg.get("max_words", 500))
+    if is_tuned:
+        if mode == "rag":
+            rec_instructions = (
+                "  5. Recommendations\n"
+                "     Provide 3 to 5 actionable mitigation steps proportional to the detected threat and confidence level.\n"
+                "     If a step is supported by a retrieved source, put the citation at the end of the sentence (e.g. 'Action description [1].').\n"
+                "     NEVER start a recommendation line with [N] or with source titles. If a step is a general precaution not described in the sources, write '(general precaution)' instead of a citation."
+            )
+        else:
+            rec_instructions = (
+                "  5. Recommendations\n"
+                "     Provide 3 to 5 actionable mitigation steps proportional to the detected threat and confidence level based on general cybersecurity practices.\n"
+                "     Do NOT include any citations, bracketed numbers, or source references in this ungrounded mode."
+            )
 
-    report_lines = [
-        "[REPORT REQUEST]",
-        "  Generate a structured report with sections:",
-        "  1. Rationale",
-        "  2. Key Indicators",
-        "  3. Confidence Assessment",
-        "  4. Threat Assessment",
-        "  5. Recommendations",
-        f"  Write between {min_words} and {max_words} words in total, using the five section headings exactly as numbered above.",
-    ]
-    if pred_class == "Benign":
-        report_lines.append(
-            "  No attack was detected. Say so in the Rationale, describe which indicators are consistent with normal traffic, "
-            "assess the confidence, state that the threat level is low, and recommend routine monitoring. Do not describe an attack."
-        )
+        report_lines = [
+            "[REPORT REQUEST]",
+            "  Write a structured report with exactly these five sections:",
+            "  1. Rationale",
+            "     State what the model detected, the numeric confidence score, and the confidence tier action.",
+            "  2. Key Indicators",
+            f"     Explain ALL {k_features} features listed in [KEY ANOMALOUS INDICATORS]. For each feature: name, observed value, position relative to average, effect direction, and what that means for this flow. If a feature is near the training average, state that it does not by itself indicate an attack.",
+            "  3. Confidence Assessment",
+            "     Interpret the numeric confidence and tier. Acknowledge uncertainty if confidence is below VERY_HIGH.",
+            "  4. Threat Assessment",
+            "     Describe the likely threat based strictly on observed flow evidence versus statistical model inference. Do not claim botnet involvement, high traffic volume, or flooding unless the numeric features directly support it.",
+            rec_instructions,
+            f"  Write between {min_words} and {max_words} words in total (target 350–500 words), using the five section headings exactly as numbered above.",
+        ]
+        if pred_class == "Benign":
+            report_lines.append(
+                "  No attack was detected. Say so in the Rationale, describe which indicators are consistent with normal traffic, "
+                "assess the confidence, state that the threat level is low, and recommend routine monitoring. Do not describe an attack."
+            )
+    else:
+        report_lines = [
+            "[REPORT REQUEST]",
+            "  Generate a structured report with sections:",
+            "  1. Rationale",
+            "  2. Key Indicators",
+            "  3. Confidence Assessment",
+            "  4. Threat Assessment",
+            "  5. Recommendations",
+            f"  Write between {min_words} and {max_words} words in total, using the five section headings exactly as numbered above.",
+        ]
+        if pred_class == "Benign":
+            report_lines.append(
+                "  No attack was detected. Say so in the Rationale, describe which indicators are consistent with normal traffic, "
+                "assess the confidence, state that the threat level is low, and recommend routine monitoring. Do not describe an attack."
+            )
     report_section = "\n".join(report_lines)
 
     # 7. Assemble User Prompt

@@ -1,0 +1,26 @@
+1. Rationale
+The model detected a DDoS attack with a confidence score of 1.0000, indicating a VERY_HIGH confidence level. This suggests that the attack is highly likely to be a DDoS attack.
+
+2. Key Indicators
+The top-5 features most influential in this decision are:
+
+* Feature 1: Init Fwd Win Byts = 8192 (near the training average; effect on the DDoS score: raises) - This value is near the training average, so it does not by itself indicate an attack.
+* Feature 2: Tot Fwd Pkts = 3 (near the training average; effect on the DDoS score: raises) - This value is near the training average, so it does not by itself indicate an attack.
+* Feature 3: Flow Pkts/s = 5.723 (near the training average; effect on the DDoS score: lowers) - This value is near the training average, so it does not by itself indicate an attack.
+* Feature 4: Flow IAT Std = 499200 (near the training average; effect on the DDoS score: lowers) - This value is near the training average, so it does not by itself indicate an attack.
+* Feature 5: Tot Bwd Pkts = 4 (near the training average; effect on the DDoS score: lowers) - This value is near the training average, so it does not by itself indicate an attack.
+
+3. Confidence Assessment
+The model's confidence score of 1.0000 indicates a VERY_HIGH confidence level, suggesting that the attack is highly likely to be a DDoS attack. However, it is important to note that the features themselves do not indicate a high volume of traffic or flooding, but rather suggest that the attack is likely to be a DDoS attack.
+
+4. Threat Assessment
+Based on the observed flow evidence, it is likely that the attack is a DDoS attack, but it is not possible to determine the exact nature of the attack (e.g. botnet involvement, high traffic volume, or flooding) without further investigation.
+
+5. Recommendations
+To mitigate this attack, the following steps can be taken:
+
+* Apply ingress filtering at border routers [2].
+* Implement rate limiting on incoming traffic to prevent excessive packet rates [1].
+* Monitor network traffic for signs of flooding or high packet rates and take action accordingly.
+
+Note: These recommendations are based on the observed flow evidence and the model's confidence score, and are intended to provide a general framework for mitigation. Further investigation and analysis may be necessary to determine the specific nature of the attack and the most effective mitigation strategies.

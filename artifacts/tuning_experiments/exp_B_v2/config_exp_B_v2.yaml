@@ -1,0 +1,24 @@
+# Experiment B v2 Configuration: Prompt Tuning with Strict Grounding & Anti-Hallucination
+# Inherits all baseline parameters, activates prompt_version: tuned
+
+llm:
+  model: llama3:8b
+  host: http://localhost:11434
+  temperature: 0.2
+  seed: 42
+  num_ctx: 8192
+  num_predict: 1100
+  keep_alive: "15m"
+  request_timeout_s: 600
+  min_words: 300
+  max_words: 600
+  prompt_version: "tuned"
+  suppress_near_average_implications: true
+  tier_actions:
+    VERY_HIGH: "Very High: fully automated response"
+    HIGH: "High: analyst review within 15 minutes"
+    MEDIUM: "Medium: analyst review within 1 hour"
+    LOW: "Low: manual deep inspection"
+  z_near: 0.5
+  z_far: 1.5
+

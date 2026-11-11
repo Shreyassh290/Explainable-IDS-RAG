@@ -674,3 +674,64 @@ def test_aggregate_counts_all_runs(tmp_path: Path, monkeypatch: Any, capsys: Any
     assert "[rag] total-reports=4" in captured
     assert "[vanilla] total-reports=4" in captured
 
+
+# ---------------------------------------------------------------------------
+# Test 12: generate_report passes repeat_penalty and top_p when present
+# ---------------------------------------------------------------------------
+
+
+def test_generate_report_passes_repeat_penalty_and_top_p() -> None:
+    cfg = {
+        "llm": {
+            "model": "llama3:8b",
+            "temperature": 0.2,
+            "seed": 42,
+            "num_ctx": 8192,
+            "num_predict": 1100,
+            "repeat_penalty": 1.1,
+            "top_p": 0.9,
+        }
+    }
+    fake_client = FakeClient(chat_response=FakeChatResponse("Custom param test"))
+    prompt = {"mode": "rag", "system": "sys", "user": "usr"}
+    generate_report(prompt, cfg, client=fake_client)
+
+    called_opts = fake_client.last_chat_args["options"]
+    assert called_opts["repeat_penalty"] == 1.1
+    assert called_opts["top_p"] == 0.9
+
+
+# ---------------------------------------------------------------------------
+# Test 13: run_case respects custom out_dir argument
+# ---------------------------------------------------------------------------
+
+
+def test_run_case_respects_custom_out_dir(tmp_path: Path) -> None:
+    cfg = {
+        "llm": {
+            "model": "llama3:8b",
+            "temperature": 0.2,
+            "seed": 42,
+            "min_words": 1,
+            "max_words": 1000,
+            "tier_actions": {"VERY_HIGH": "Very High: automated"},
+            "suppress_near_average_implications": False,
+        }
+    }
+    explanation = {
+        "predicted_class": "DoS",
+        "confidence": 0.99,
+        "tier": "VERY_HIGH",
+        "features": [],
+        "metadata": {},
+    }
+    custom_dir = tmp_path / "custom_experiment_dir"
+    fake_client = FakeClient(chat_response=FakeChatResponse("Custom out_dir report"))
+
+    run_case("case_custom", explanation, chunks=None, cfg=cfg, client=fake_client, out_dir=custom_dir)
+
+    assert (custom_dir / "case_custom_rag.txt").exists()
+    assert (custom_dir / "case_custom_vanilla.txt").exists()
+    assert (custom_dir / "case_custom.json").exists()
+
+

@@ -1,0 +1,39 @@
+{
+  "pilot_flows": [
+    {
+      "flow_id": 10045,
+      "class": "Benign",
+      "reason": "Clean baseline benign flow; tests regression prevention"
+    },
+    {
+      "flow_id": 52197,
+      "class": "Benign",
+      "reason": "Hardest benign case (214 words, copied source header in baseline)"
+    },
+    {
+      "flow_id": 44644,
+      "class": "DoS",
+      "reason": "Standard DoS flow with 4 citations; tests citation grounding"
+    },
+    {
+      "flow_id": 22251,
+      "class": "DoS",
+      "reason": "Baseline added invalid References block at end"
+    },
+    {
+      "flow_id": 106513,
+      "class": "DDoS",
+      "reason": "Baseline hallucinated botnet claim"
+    },
+    {
+      "flow_id": 8136,
+      "class": "DDoS",
+      "reason": "Baseline omitted numbered headings"
+    },
+    {
+      "flow_id": 115902,
+      "class": "DDoS",
+      "reason": "Metadata vs attack evidence grounding check"
+    }
+  ]
+}

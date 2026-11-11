@@ -173,6 +173,10 @@ def generate_report(
         "num_ctx": int(llm_cfg.get("num_ctx", 8192)),
         "num_predict": int(llm_cfg.get("num_predict", 1100)),
     }
+    if "repeat_penalty" in llm_cfg and llm_cfg["repeat_penalty"] is not None:
+        options["repeat_penalty"] = float(llm_cfg["repeat_penalty"])
+    if "top_p" in llm_cfg and llm_cfg["top_p"] is not None:
+        options["top_p"] = float(llm_cfg["top_p"])
     keep_alive = llm_cfg.get("keep_alive", "15m")
 
     if client is None:
@@ -452,18 +456,20 @@ def run_case(
     client: Any = None,
     repeat: int = 1,
     vary_seed: bool = False,
+    out_dir: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Build prompts, generate reports in both RAG and vanilla modes, save files and validate.
 
     For repeat > 1, run 1's text is written to the plain file; subsequent runs go to
-    artifacts/reports/runs/<case>_<mode>_r<k>.txt.
+    <out_dir>/runs/<case>_<mode>_r<k>.txt.
     With vary_seed=True, run k uses seed = llm.seed + (k - 1).
 
     Returns:
         (rag_validation_dict, vanilla_validation_dict) for run 1.
     """
-    root = get_project_root()
-    out_dir = root / "artifacts" / "reports"
+    if out_dir is None:
+        root = get_project_root()
+        out_dir = root / "artifacts" / "reports"
     out_dir.mkdir(parents=True, exist_ok=True)
     runs_dir = out_dir / "runs"
     if repeat > 1:
@@ -563,6 +569,8 @@ def main() -> None:
                         help="Number of times to generate each case/mode (default: 1).")
     parser.add_argument("--vary-seed", action="store_true",
                         help="With --repeat N, run k uses seed = llm.seed + (k-1).")
+    parser.add_argument("--out-dir", type=str, default=None,
+                        help="Output directory for generated reports (default: artifacts/reports).")
     args = parser.parse_args()
 
     cfg = load_config()
@@ -623,7 +631,7 @@ def main() -> None:
 
         has_failure = False
 
-        out_dir = root / "artifacts" / "reports"
+        out_dir = Path(args.out_dir) if args.out_dir else (root / "artifacts" / "reports")
         out_dir.mkdir(parents=True, exist_ok=True)
         runs_dir = out_dir / "runs"
         if repeat > 1:

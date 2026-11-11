@@ -472,3 +472,86 @@ def test_near_average_suppression_applies_in_rag_mode(
     assert near_baseline in user_text
     assert "UNIQUE_NEAR_IMPLICATION_TEXT" not in user_text
     assert "UNIQUE_FAR_IMPLICATION_TEXT" in user_text
+
+
+# ---------------------------------------------------------------------------
+# Test 13: Tuned prompt version activates enhanced rules and formatting
+# ---------------------------------------------------------------------------
+
+
+def test_tuned_prompt_version_rules_and_headings(
+    sample_explanation: dict[str, Any],
+    sample_chunks: list[dict[str, Any]],
+    test_cfg: dict[str, Any],
+) -> None:
+    tuned_cfg = {
+        "llm": {
+            **test_cfg.get("llm", {}),
+            "prompt_version": "tuned",
+        }
+    }
+    for mode in ("rag", "vanilla"):
+        res = build_prompt(sample_explanation, sample_chunks, mode=mode, cfg=tuned_cfg)
+        # Check system prompt contains the numbered rules
+        assert "Rules you must follow exactly:" in res["system"]
+        assert "1. Use exactly five numbered section headings" in res["system"]
+        assert "Never state that an observed feature value alone proves an attack occurred" in res["system"]
+        assert "Do not invent IP addresses" in res["system"]
+        assert "between 400 and 500 words total" in res["system"]
+
+        # Check user prompt contains all 5 required section headings
+        for h in [
+            "1. Rationale",
+            "2. Key Indicators",
+            "3. Confidence Assessment",
+            "4. Threat Assessment",
+            "5. Recommendations",
+        ]:
+            assert h in res["user"]
+
+
+# ---------------------------------------------------------------------------
+# Test 14: Tuned prompt Vanilla mode strictly prohibits bracketed citations
+# ---------------------------------------------------------------------------
+
+
+def test_tuned_prompt_vanilla_mode_prohibitions(
+    sample_explanation: dict[str, Any],
+    test_cfg: dict[str, Any],
+) -> None:
+    tuned_cfg = {
+        "llm": {
+            **test_cfg.get("llm", {}),
+            "prompt_version": "tuned",
+        }
+    }
+    res = build_prompt(sample_explanation, None, mode="vanilla", cfg=tuned_cfg)
+    assert "VANILLA MODE CITATION PROHIBITION" in res["system"]
+    assert "Do NOT output any bracketed numbers (such as [1], [2], or [n])" in res["system"]
+    assert "Do NOT include any citations, bracketed numbers, or source references" in res["user"]
+
+
+# ---------------------------------------------------------------------------
+# Test 15: Tuned prompt RAG mode enforces citation placement and anti-hallucination
+# ---------------------------------------------------------------------------
+
+
+def test_tuned_prompt_rag_grounding_and_anti_hallucination(
+    sample_explanation: dict[str, Any],
+    sample_chunks: list[dict[str, Any]],
+    test_cfg: dict[str, Any],
+) -> None:
+    tuned_cfg = {
+        "llm": {
+            **test_cfg.get("llm", {}),
+            "prompt_version": "tuned",
+        }
+    }
+    res = build_prompt(sample_explanation, sample_chunks, mode="rag", cfg=tuned_cfg)
+    assert "RAG CITATION PLACEMENT & GROUNDING RULES" in res["system"]
+    assert "NEVER place a bracketed number [N] at the beginning of a line or bullet" in res["system"]
+    assert "NEVER copy or reproduce retrieved source headers" in res["system"]
+    assert "DO NOT claim, infer, or assume the presence of botnets" in res["system"]
+    assert "NEVER start a recommendation line with [N]" in res["user"]
+
+

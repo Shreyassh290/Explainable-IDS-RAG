@@ -1,0 +1,39 @@
+Overlap threshold: 0.5
+Total inline citations: 35
+Verified citations (overlap >= 0.5): 2/35 (5.7%)
+
+Flow 10947 [1] chunk=a0532be4 overlap=0.125 verified=False
+Flow 10947 [1] chunk=a0532be4 overlap=0.125 verified=False
+Flow 83014 [1] chunk=a0532be4 overlap=0.154 verified=False
+Flow 92199 [1] chunk=a0532be4 overlap=0.375 verified=False
+Flow 92199 [1] chunk=a0532be4 overlap=0.375 verified=False
+Flow 22251 [2] chunk=9abd9022 overlap=0.235 verified=False
+Flow 44644 [2] chunk=9abd9022 overlap=0.333 verified=False
+Flow 48490 [2] chunk=9abd9022 overlap=0.294 verified=False
+Flow 54212 [2] chunk=9abd9022 overlap=0.235 verified=False
+Flow 60238 [2] chunk=9abd9022 overlap=0.294 verified=False
+Flow 60238 [1] chunk=a1bd92f1 overlap=0.250 verified=False
+Flow 60238 [3] chunk=91578269 overlap=0.636 verified=True
+Flow 65622 [2] chunk=9abd9022 overlap=0.294 verified=False
+Flow 77292 [2] chunk=9abd9022 overlap=0.235 verified=False
+Flow 77292 [1] chunk=a1bd92f1 overlap=0.000 verified=False
+Flow 93707 [2] chunk=9abd9022 overlap=0.294 verified=False
+Flow 98556 [2] chunk=9abd9022 overlap=0.235 verified=False
+Flow 98556 [1] chunk=a1bd92f1 overlap=0.000 verified=False
+Flow 98556 [4] chunk=b8c5315e overlap=0.222 verified=False
+Flow 110886 [2] chunk=9abd9022 overlap=0.250 verified=False
+Flow 110886 [4] chunk=b8c5315e overlap=0.143 verified=False
+Flow 8136 [2] chunk=91578269 overlap=0.357 verified=False
+Flow 19603 [2] chunk=91578269 overlap=0.412 verified=False
+Flow 32906 [2] chunk=91578269 overlap=0.474 verified=False
+Flow 32906 [1] chunk=9abd9022 overlap=0.444 verified=False
+Flow 42388 [1] chunk=9abd9022 overlap=0.571 verified=True
+Flow 42388 [2] chunk=91578269 overlap=0.357 verified=False
+Flow 53167 [2] chunk=91578269 overlap=0.357 verified=False
+Flow 53167 [1] chunk=9abd9022 overlap=0.364 verified=False
+Flow 75521 [2] chunk=91578269 overlap=0.412 verified=False
+Flow 83734 [2] chunk=91578269 overlap=0.357 verified=False
+Flow 90411 [2] chunk=91578269 overlap=0.429 verified=False
+Flow 90411 [1] chunk=9abd9022 overlap=0.417 verified=False
+Flow 106513 [2] chunk=91578269 overlap=0.412 verified=False
+Flow 115902 [2] chunk=91578269 overlap=0.421 verified=False

@@ -1,0 +1,15 @@
+flow_id,true_class,predicted_class,mode,words,words_in_range,headings_numbered_count,headings_any_count,cited,citation_ranges_count,copied_source_headers,has_reference_list,unsupported_ips,attack_ids_not_in_kb,kb_attack_ids_named,sp_not_in_kb,elapsed_s,tokens_per_second
+10045,Benign,Benign,rag,391,True,5,5,,0,0,False,,,,,15.16,46.6
+10045,Benign,Benign,vanilla,404,True,5,5,,0,0,False,,,,,14.4,49.8
+52197,Benign,Benign,rag,391,True,5,5,,0,0,False,,,,,15.17,46.7
+52197,Benign,Benign,vanilla,402,True,5,5,,0,0,False,,,,,13.5,49.7
+44644,DoS,DoS,rag,414,True,5,5,1;2,0,0,False,,,,,16.12,47.8
+44644,DoS,DoS,vanilla,413,True,5,5,,0,0,False,,,,,14.67,50.0
+22251,DoS,DoS,rag,351,True,5,5,1;2,0,0,False,,,,,14.43,47.7
+22251,DoS,DoS,vanilla,417,True,5,5,,0,0,False,,,,,14.33,49.8
+106513,DDoS,DDoS,rag,416,True,5,5,1;2,0,0,False,,,,,15.34,47.8
+106513,DDoS,DDoS,vanilla,380,True,5,5,,0,0,False,,,,,13.03,49.9
+8136,DDoS,DDoS,rag,440,True,5,5,1;2,0,0,False,,,,,15.59,47.9
+8136,DDoS,DDoS,vanilla,457,True,5,5,,0,0,False,,,,,15.32,49.7
+115902,DDoS,DDoS,rag,349,True,5,5,2,0,0,False,,,,,13.16,47.8
+115902,DDoS,DDoS,vanilla,427,True,5,5,,0,0,False,,,,,15.13,49.9

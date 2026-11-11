@@ -1,0 +1,33 @@
+1. Rationale
+The model detected a DDoS attack with a confidence score of 1.0000, indicating a VERY_HIGH confidence tier action. This detection is based on the observed flow metadata and the statistical model's prediction.
+
+2. Key Indicators
+Feature 1: Flow Pkts/s = 0.0823 (near the training average; effect on the DDoS score: lowers)
+This feature's value is near the training average, indicating that it does not by itself indicate an attack. The low packet rate suggests that this flow is not contributing to a volumetric flooding attack.
+
+Feature 2: Init Fwd Win Byts = 2049 (moderately below the training average; effect on the DDoS score: lowers)
+The observed value is moderately below the training average, which may flag scanning or attack tools. However, this feature alone does not indicate an attack.
+
+Feature 3: Idle Mean = 24300000 (moderately above the training average; effect on the DDoS score: raises)
+The mean idle interval duration is moderately above the training average, reflecting pause behavior between packet bursts. This feature's elevated value contributes to the DDoS detection.
+
+Feature 4: Protocol = 6 (near the training average; effect on the DDoS score: raises)
+The observed protocol value is near the training average, indicating that it does not by itself indicate an attack. The presence of TCP protocol does not necessarily imply an attack.
+
+Feature 5: ACK Flag Cnt = 1 (moderately above the training average; effect on the DDoS score: raises)
+The elevated ACK count is consistent with established connections under high-rate interaction. This feature's value contributes to the DDoS detection.
+
+3. Confidence Assessment
+The model's confidence score of 1.0000 indicates a VERY_HIGH confidence tier action. While there is no uncertainty in the detection, it is essential to acknowledge that the confidence score is based on statistical predictions and may not reflect the actual attack scenario.
+
+4. Threat Assessment
+The likely threat is a potential DDoS attack, as indicated by the observed flow evidence. The elevated idle mean and ACK flag count suggest a possible attempt to saturate the target network. However, the low packet rate and moderate initial forward window bytes do not support a volumetric flooding attack.
+
+5. Recommendations
+To mitigate this potential DDoS attack, the following steps can be taken:
+
+* Apply ingress filtering at border routers [2] to block suspicious traffic.
+* Implement rate limiting on the target network to prevent excessive traffic [1].
+* Monitor network traffic and adjust filtering rules as needed to prevent further attacks.
+
+These recommendations are based on the detected threat and confidence level, and are designed to prevent further attacks and minimize network disruption.

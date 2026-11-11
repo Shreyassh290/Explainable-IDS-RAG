@@ -110,6 +110,7 @@ llm:
     LOW: "Low: manual deep inspection"
   z_near: 0.5  # Standard deviation threshold for near-average feature value
   z_far: 1.5  # Standard deviation threshold for far-from-average feature value
+  prompt_version: baseline  # Active prompt version: 'baseline' or 'tuned' (improved grounding & heading enforcement)
 
 eval:
   seed: 42

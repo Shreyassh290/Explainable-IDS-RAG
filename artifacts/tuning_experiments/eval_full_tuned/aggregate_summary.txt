@@ -1,0 +1,32 @@
+=== FULL 30-FLOW BENCHMARK EVALUATION (EXPERIMENT B v2) ===
+
+MODE: RAG (n=30)
+  Words min/mean/max: 331 / 393.2 / 457
+  Words in 300-600 range: 30/30 (100.0%)
+  5 Numbered Headings (exact): 30/30 (100.0%)
+  Copied Source Headers: 0/30
+  Trailing Reference Lists: 0/30
+  Reports with inline citations: 24/30
+  Average generation time: 13.85s
+
+  [Benign] n=10, mean_words=401.4, 5_headings=10/10
+  [DoS] n=10, mean_words=389.8, 5_headings=10/10
+  [DDoS] n=10, mean_words=388.4, 5_headings=10/10
+
+============================================================
+
+MODE: VANILLA (n=30)
+  Words min/mean/max: 343 / 406.9 / 496
+  Words in 300-600 range: 30/30 (100.0%)
+  5 Numbered Headings (exact): 30/30 (100.0%)
+  Copied Source Headers: 0/30
+  Trailing Reference Lists: 0/30
+  Reports with inline citations: 0/30
+  Average generation time: 12.40s
+
+  [Benign] n=10, mean_words=413.5, 5_headings=10/10
+  [DoS] n=10, mean_words=400.4, 5_headings=10/10
+  [DDoS] n=10, mean_words=406.7, 5_headings=10/10
+
+============================================================
+

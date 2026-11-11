@@ -1,0 +1,118 @@
+citation_check:
+  overlap_threshold: 0.5
+ensemble:
+  tiers:
+    high: 0.7
+    medium: 0.5
+    very_high: 0.95
+  use_temperature: false
+eval:
+  exclude_rows:
+  - 0
+  - 3
+  - 4
+  - 637
+  - 100
+  - 2500
+  - 60000
+  flows_file: artifacts/eval/eval_flows.json
+  per_class: 10
+  seed: 42
+explain:
+  method: gradient
+  top_k: 5
+inspect:
+  chunksize: 200000
+llm:
+  host: http://localhost:11434
+  keep_alive: 15m
+  max_words: 600
+  min_words: 300
+  model: llama3:8b
+  num_ctx: 8192
+  num_predict: 1100
+  prompt_version: tuned
+  request_timeout_s: 600
+  seed: 42
+  suppress_near_average_implications: true
+  temperature: 0.2
+  tier_actions:
+    HIGH: 'High: analyst review within 15 minutes'
+    LOW: 'Low: manual deep inspection'
+    MEDIUM: 'Medium: analyst review within 1 hour'
+    VERY_HIGH: 'Very High: fully automated response'
+  z_far: 1.5
+  z_near: 0.5
+model:
+  batch_size: 512
+  dropout: 0.3
+  early_stopping_patience: 5
+  hidden:
+  - 128
+  - 64
+  - 32
+  lr: 0.001
+  max_epochs: 100
+  monitor: f1
+  num_workers: 0
+  use_batchnorm: false
+paths:
+  artifacts: artifacts
+  kb: data/kb
+  models: models
+  processed: data/processed
+  raw: data/raw
+  reports: artifacts/reports
+preprocess:
+  attack_cap: 300000
+  benign_cap: 300000
+  corr_threshold: 0.95
+  id_columns:
+  - Flow ID
+  - Src IP
+  - Src Port
+  - Dst IP
+  - Dst Port
+  - Timestamp
+  label_map:
+    Benign:
+    - Benign
+    DDoS:
+    - DDOS attack-HOIC
+    - DDoS attacks-LOIC-HTTP
+    - DDOS attack-LOIC-UDP
+    DoS:
+    - DoS attacks-Hulk
+    - DoS attacks-SlowHTTPTest
+    - DoS attacks-GoldenEye
+    - DoS attacks-Slowloris
+  split:
+    test: 0.15
+    train: 0.7
+    val: 0.15
+rag:
+  bm25_b: 0.75
+  bm25_k1: 1.5
+  chunk_max_tokens: 350
+  chunk_min_tokens: 200
+  chunk_overlap: 200
+  embed_batch_size: 32
+  embed_device: auto
+  embed_model: sentence-transformers/all-mpnet-base-v2
+  fallback_min_chunks: 3
+  fallback_score_threshold: 0.5
+  fallback_sections:
+  - section: Executive Summary
+    source: NIST_SP_800-61_Rev2.pdf
+  - section: 3.6 Recommendations
+    source: NIST_SP_800-61_Rev2.pdf
+  final_k: 5
+  fusion_top: 30
+  fusion_weights:
+    bm25: 0.4
+    semantic: 0.6
+  index_dir: data/kb/index
+  reranker: cross-encoder/ms-marco-MiniLM-L-6-v2
+  retrieve_k_each: 30
+  rrf_k: 60
+seed: 42
