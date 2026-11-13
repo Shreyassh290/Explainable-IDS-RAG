@@ -1,0 +1,188 @@
+# IDS-RAG-Mitigation v2 Configuration (Extra Classes Extension)
+# Supports 6 classes: Benign, DoS, DDoS, Bot, FTP-BruteForce, SSH-Bruteforce
+# Reuses the exact 41 features and frozen scaler from baseline for full compatibility.
+
+seed: 42
+
+paths:
+  raw: ../data/raw
+  processed: data/v2/processed
+  baseline_processed: data/processed
+  kb: data/kb
+  models: models
+  scaler: models/scaler.joblib
+  feature_names: models/feature_names.json
+  artifacts: artifacts
+  reports: artifacts/reports
+
+inspect:
+  chunksize: 200000
+
+preprocess:
+  benign_cap: 300000
+  attack_cap: 300000
+  corr_threshold: 0.95
+  split:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  id_columns:
+    - "Flow ID"
+    - "Src IP"
+    - "Src Port"
+    - "Dst IP"
+    - "Dst Port"
+    - "Timestamp"
+
+  # Full 6-class label mapping (IDs 0-5)
+  label_map:
+    Benign:
+      - "Benign"
+    DoS:
+      - "DoS attacks-Hulk"
+      - "DoS attacks-SlowHTTPTest"
+      - "DoS attacks-GoldenEye"
+      - "DoS attacks-Slowloris"
+    DDoS:
+      - "DDOS attack-HOIC"
+      - "DDoS attacks-LOIC-HTTP"
+      - "DDOS attack-LOIC-UDP"
+    Bot:
+      - "Bot"
+    FTP-BruteForce:
+      - "FTP-BruteForce"
+    SSH-Bruteforce:
+      - "SSH-Bruteforce"
+
+  # Stage 1 extra classes to process from raw CSVs
+  extra_classes:
+    Bot:
+      - "Bot"
+    FTP-BruteForce:
+      - "FTP-BruteForce"
+    SSH-Bruteforce:
+      - "SSH-Bruteforce"
+
+  # Exact 41 selected features from baseline (ordered)
+  features:
+    - "Protocol"
+    - "Flow Duration"
+    - "Tot Fwd Pkts"
+    - "Tot Bwd Pkts"
+    - "Fwd Pkt Len Max"
+    - "Fwd Pkt Len Min"
+    - "Fwd Pkt Len Mean"
+    - "Bwd Pkt Len Max"
+    - "Bwd Pkt Len Min"
+    - "Bwd Pkt Len Mean"
+    - "Flow Byts/s"
+    - "Flow Pkts/s"
+    - "Flow IAT Mean"
+    - "Flow IAT Std"
+    - "Flow IAT Max"
+    - "Fwd IAT Std"
+    - "Bwd IAT Tot"
+    - "Bwd IAT Mean"
+    - "Bwd IAT Std"
+    - "Bwd IAT Max"
+    - "Bwd IAT Min"
+    - "Fwd PSH Flags"
+    - "Fwd URG Flags"
+    - "Bwd Pkts/s"
+    - "Pkt Len Min"
+    - "Pkt Len Mean"
+    - "Pkt Len Var"
+    - "FIN Flag Cnt"
+    - "RST Flag Cnt"
+    - "PSH Flag Cnt"
+    - "ACK Flag Cnt"
+    - "URG Flag Cnt"
+    - "Down/Up Ratio"
+    - "Init Fwd Win Byts"
+    - "Init Bwd Win Byts"
+    - "Fwd Seg Size Min"
+    - "Active Mean"
+    - "Active Std"
+    - "Active Min"
+    - "Idle Mean"
+    - "Idle Std"
+
+model:
+  hidden:
+    - 128
+    - 64
+    - 32
+  dropout: 0.3
+  use_batchnorm: false
+  num_workers: 0
+  lr: 0.001
+  batch_size: 512
+  max_epochs: 100
+  early_stopping_patience: 5
+  monitor: "f1"
+
+ensemble:
+  tiers:
+    very_high: 0.95
+    high: 0.70
+    medium: 0.50
+
+rag:
+  embed_model: "sentence-transformers/all-mpnet-base-v2"
+  reranker: cross-encoder/ms-marco-MiniLM-L-6-v2
+  # v2 merged index (742 base + extra-class chunks); never data/kb/index/
+  index_dir: "data/v2/kb/index"
+  embed_batch_size: 32
+  embed_device: "auto"
+  chunk_min_tokens: 30
+  chunk_max_tokens: 350
+  chunk_overlap: 200
+  retrieve_k_each: 30
+  rrf_k: 60
+  fusion_top: 30
+  fallback_min_chunks: 3
+  fallback_score_threshold: 0.5
+  # Primary fallback: existing NIST 800-61 guidance
+  fallback_sections:
+    - source: "NIST_SP_800-61_Rev2.pdf"
+      section: "Executive Summary"
+    - source: "NIST_SP_800-61_Rev2.pdf"
+      section: "3.6 Recommendations"
+  # V2-specific fallback: brute-force and botnet mitigations
+  v2_fallback_sections:
+    - source: "NIST_SP_800-61_Rev2.pdf"
+      section: "Executive Summary"
+    - source: "NIST_SP_800-61_Rev2.pdf"
+      section: "3.6 Recommendations"
+    - source: "MITRE_T1110.txt"
+      section: "Mitigations"
+    - source: "MITRE_T1583_002.txt"
+      section: "Mitigations"
+  final_k: 5
+  fusion_weights:
+    semantic: 0.60
+    bm25: 0.40
+  bm25_k1: 1.5
+  bm25_b: 0.75
+
+llm:
+  model: llama3:8b
+  host: http://localhost:11434
+  temperature: 0.2
+  seed: 42
+  num_ctx: 8192
+  num_predict: 1100
+  keep_alive: "15m"
+  request_timeout_s: 600
+  min_words: 300
+  max_words: 600
+  suppress_near_average_implications: true
+  tier_actions:
+    VERY_HIGH: "Very High: fully automated response"
+    HIGH: "High: analyst review within 15 minutes"
+    MEDIUM: "Medium: analyst review within 1 hour"
+    LOW: "Low: manual deep inspection"
+  z_near: 0.5
+  z_far: 1.5
+  prompt_version: tuned
+
