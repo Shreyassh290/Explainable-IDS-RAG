@@ -2,6 +2,7 @@
 
 Provides real-time network intrusion detection, feature attribution explanation,
 targeted knowledge base retrieval, and LLM-assisted incident response reporting.
+Supports both v1 baseline (Benign, DoS, DDoS) and v2 extra classes (Bot, FTP-BruteForce, SSH-Bruteforce).
 """
 
 from __future__ import annotations
@@ -28,6 +29,8 @@ from ids_rag.config import get_project_root, load_config
 from ids_rag.llm.generate import check_ollama
 from ids_rag.pdf_report import build_pdf
 from ids_rag.pipeline import PipelineContext, run_flow
+from ids_rag.v2.pipeline_v2 import PipelineV2Context, run_flow_v2
+from ids_rag.v2.prepare_extra import load_v2_config
 
 
 # ---------------------------------------------------------------------------
@@ -37,15 +40,33 @@ from ids_rag.pipeline import PipelineContext, run_flow
 
 @st.cache_resource
 def load_app_context() -> tuple[PipelineContext, dict[str, Any]]:
-    """Load and cache the PipelineContext (models, scalers, index) once."""
+    """Load and cache the baseline v1 PipelineContext once."""
     cfg = load_config()
     ctx = PipelineContext.load(cfg)
     return ctx, cfg
 
 
-def load_preset_samples() -> list[dict[str, Any]]:
-    """Load preset sample flows from app/samples.json."""
-    samples_file = app_dir / "samples.json"
+@st.cache_resource
+def load_app_context_v2() -> tuple[PipelineV2Context, dict[str, Any]]:
+    """Load and cache the v2 PipelineV2Context (models_v2, merged v2 KB) once."""
+    cfg = load_v2_config()
+    ctx = PipelineV2Context.load(cfg)
+    return ctx, cfg
+
+
+def load_preset_samples(version: str = "v1") -> list[dict[str, Any]]:
+    """Load preset sample flows from app/samples.json (v1) or app/samples_v2.json (v2)."""
+    if version.startswith("v2"):
+        samples_file = app_dir / "samples_v2.json"
+        if not samples_file.exists():
+            try:
+                from scripts.v2_build_samples import build_samples_v2
+                return build_samples_v2()
+            except Exception:
+                pass
+    else:
+        samples_file = app_dir / "samples.json"
+
     if samples_file.exists():
         with open(samples_file, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -53,11 +74,11 @@ def load_preset_samples() -> list[dict[str, Any]]:
 
 
 def get_features_fingerprint(features: dict[str, Any]) -> str:
-    """Return first 12 hex chars of SHA-1 over JSON of features ignoring 'Label'."""
+    """Return first 12 hex chars of SHA-1 over JSON of features ignoring 'Label' and 'Provenance'."""
     cleaned = {
         str(k): str(v)
         for k, v in features.items()
-        if str(k) != "Label"
+        if str(k).lower() not in ("label", "provenance")
     }
     dumped = json.dumps(cleaned, sort_keys=True)
     return hashlib.sha1(dumped.encode("utf-8")).hexdigest()[:12]
@@ -87,12 +108,27 @@ def main() -> None:
         "RAG-Augmented Incident Response (NIST / MITRE ATT&CK)"
     )
 
+    # Sidebar: Pipeline Version Selection
+    st.sidebar.header("Pipeline Version")
+    pipeline_version = st.sidebar.radio(
+        "Select Pipeline Mode:",
+        [
+            "v1 (Baseline: Benign, DoS, DDoS)",
+            "v2 (Extra Classes: Bot, FTP-BruteForce, SSH-Bruteforce)",
+        ],
+        index=0,
+    )
+    is_v2 = pipeline_version.startswith("v2")
+
     # Context Loading
     with st.spinner("Loading neural ensemble, knowledge index, and scalers..."):
         try:
-            ctx, cfg = load_app_context()
+            if is_v2:
+                ctx, cfg = load_app_context_v2()
+            else:
+                ctx, cfg = load_app_context()
         except Exception as e:
-            st.error(f"Failed to initialize pipeline context: {e}")
+            st.error(f"Failed to initialize pipeline context ({pipeline_version}): {e}")
             st.stop()
 
     # Sidebar: Flow Input Configuration
@@ -116,11 +152,13 @@ def main() -> None:
     input_identifier = "custom_flow"
     source_label = "custom input"
 
-    preset_samples = load_preset_samples()
+    preset_samples = load_preset_samples("v2" if is_v2 else "v1")
 
     if input_source == "Preset Benchmark Samples":
         if not preset_samples:
-            st.sidebar.warning("No samples found in app/samples.json. Run scripts/build_samples_json.py.")
+            target_json = "app/samples_v2.json" if is_v2 else "app/samples.json"
+            builder_cmd = "uv run python scripts/v2_build_samples.py" if is_v2 else "uv run python scripts/build_samples_json.py"
+            st.sidebar.warning(f"No samples found in {target_json}. Run `{builder_cmd}`.")
         else:
             sample_options = [s["name"] for s in preset_samples]
             chosen_name = st.sidebar.selectbox("Choose Sample:", sample_options)
@@ -129,7 +167,7 @@ def main() -> None:
             flow_features = chosen_sample["features"]
             flow_meta = chosen_sample.get("metadata", {})
             sample_dataset_label = chosen_sample.get("dataset_label")
-            input_identifier = f"preset_idx_{chosen_sample['index']}"
+            input_identifier = f"preset_{'v2_' if is_v2 else ''}idx_{chosen_sample['index']}"
             source_label = chosen_name
 
             st.sidebar.info(
@@ -155,7 +193,11 @@ def main() -> None:
                     step=1,
                 )
                 selected_row = df_upload.iloc[int(row_idx)]
-                flow_features = selected_row.to_dict()
+                flow_features = {
+                    k: v
+                    for k, v in selected_row.to_dict().items()
+                    if str(k).lower() not in ("label", "provenance")
+                }
                 source_label = f"uploaded row {row_idx}"
 
                 # Extract meta if present
@@ -170,30 +212,37 @@ def main() -> None:
                         st.sidebar.info(f"**Dataset label in CSV:** `{sample_dataset_label}`")
                         break
 
-                input_identifier = f"upload_row_{row_idx}"
+                input_identifier = f"upload_{'v2_' if is_v2 else ''}row_{row_idx}"
             except Exception as e:
                 st.sidebar.error(f"Error parsing uploaded CSV: {e}")
         else:
             st.sidebar.info("Upload a file or test with `app/raw_samples.csv`.")
 
     else:  # Custom Feature Input
-        st.sidebar.markdown("Starts from test row 0 (a DDoS flow) with three features editable.")
-        sample_row = ctx.df_test.iloc[0][ctx.feature_names].to_numpy(dtype=np.float32)
-        sample_raw = ctx.scaler.inverse_transform(sample_row.reshape(1, -1))[0]
-        flow_features = dict(zip(ctx.feature_names, sample_raw.tolist()))
+        st.sidebar.markdown(
+            "Starts from test row 0 with three features editable."
+            if not is_v2
+            else "Starts from v2 test row 0 with three features editable."
+        )
+        if ctx.df_test is not None and len(ctx.df_test) > 0:
+            sample_row = ctx.df_test.iloc[0][ctx.feature_names].to_numpy(dtype=np.float32)
+            sample_raw = ctx.scaler.inverse_transform(sample_row.reshape(1, -1))[0]
+            flow_features = dict(zip(ctx.feature_names, sample_raw.tolist()))
+        else:
+            flow_features = {fn: 0.0 for fn in ctx.feature_names}
 
         # Allow user to tweak primary features
         st.sidebar.markdown("**Key Feature Adjustments:**")
         flow_features["Tot Fwd Pkts"] = st.sidebar.number_input(
-            "Tot Fwd Pkts", value=float(flow_features["Tot Fwd Pkts"]), min_value=0.0
+            "Tot Fwd Pkts", value=float(flow_features.get("Tot Fwd Pkts", 2.0)), min_value=0.0
         )
         flow_features["Flow Pkts/s"] = st.sidebar.number_input(
-            "Flow Pkts/s", value=float(flow_features["Flow Pkts/s"]), min_value=0.0
+            "Flow Pkts/s", value=float(flow_features.get("Flow Pkts/s", 100.0)), min_value=0.0
         )
         flow_features["Flow Duration"] = st.sidebar.number_input(
-            "Flow Duration", value=float(flow_features["Flow Duration"]), min_value=0.0
+            "Flow Duration", value=float(flow_features.get("Flow Duration", 5000.0)), min_value=0.0
         )
-        input_identifier = "interactive_manual"
+        input_identifier = f"interactive_manual_{'v2' if is_v2 else 'v1'}"
         source_label = "custom input"
 
     # Sidebar: Generation Settings
@@ -213,12 +262,12 @@ def main() -> None:
 
     # Check for caching directory
     demo_cache_dir = repo_root / "artifacts" / "demo_cache"
-    demo_runs_dir = repo_root / "artifacts" / "demo_runs"
+    demo_runs_dir = repo_root / "artifacts" / ("demo_runs_v2" if is_v2 else "demo_runs")
     demo_cache_dir.mkdir(parents=True, exist_ok=True)
     demo_runs_dir.mkdir(parents=True, exist_ok=True)
 
     fingerprint = get_features_fingerprint(flow_features)
-    cache_key = f"{input_identifier}_{fingerprint}_{mode_option}.json"
+    cache_key = f"{'v2_' if is_v2 else ''}{input_identifier}_{fingerprint}_{mode_option}.json"
     cache_path = demo_cache_dir / cache_key
 
     # Execute or Load
@@ -234,24 +283,37 @@ def main() -> None:
             st.session_state["flow_dataset_label"] = sample_dataset_label
             st.session_state["flow_fingerprint"] = fingerprint
             st.session_state["flow_source_label"] = source_label
+            st.session_state["flow_pipeline_version"] = pipeline_version
             st.success("Loaded pre-computed report from demo cache.")
         else:
             timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-            unique_run_id = f"demo_{timestamp_str}_{uuid.uuid4().hex[:6]}"
+            unique_run_id = f"demo_{'v2_' if is_v2 else ''}{timestamp_str}_{uuid.uuid4().hex[:6]}"
 
             with st.spinner("Running detection ensemble, feature attribution, and RAG generation..."):
                 t_start = time.perf_counter()
                 try:
-                    summary = run_flow(
-                        raw_features=flow_features,
-                        ctx=ctx,
-                        cfg=cfg,
-                        meta=flow_meta if flow_meta else None,
-                        flow_id=unique_run_id,
-                        modes=mode_option,
-                        generate=True,
-                        out_dir=demo_runs_dir,
-                    )
+                    if is_v2:
+                        summary = run_flow_v2(
+                            raw_features=flow_features,
+                            ctx=ctx,
+                            cfg=cfg,
+                            meta=flow_meta if flow_meta else None,
+                            flow_id=unique_run_id,
+                            modes=mode_option,
+                            generate=True,
+                            out_dir=demo_runs_dir,
+                        )
+                    else:
+                        summary = run_flow(
+                            raw_features=flow_features,
+                            ctx=ctx,
+                            cfg=cfg,
+                            meta=flow_meta if flow_meta else None,
+                            flow_id=unique_run_id,
+                            modes=mode_option,
+                            generate=True,
+                            out_dir=demo_runs_dir,
+                        )
                     elapsed = time.perf_counter() - t_start
                     st.session_state["flow_summary"] = summary
                     st.session_state["flow_input_id"] = input_identifier
@@ -259,6 +321,7 @@ def main() -> None:
                     st.session_state["flow_dataset_label"] = sample_dataset_label
                     st.session_state["flow_fingerprint"] = fingerprint
                     st.session_state["flow_source_label"] = source_label
+                    st.session_state["flow_pipeline_version"] = pipeline_version
                     st.success(f"Analysis completed in {elapsed:.2f}s (run ID: `{unique_run_id}`).")
 
                     # Save to cache if caching is enabled
@@ -278,16 +341,22 @@ def main() -> None:
         st.session_state["flow_dataset_label"] = sample_dataset_label
         st.session_state["flow_fingerprint"] = fingerprint
         st.session_state["flow_source_label"] = source_label
+        st.session_state["flow_pipeline_version"] = pipeline_version
 
     stored_summary = st.session_state.get("flow_summary")
     stored_fingerprint = st.session_state.get("flow_fingerprint")
     stored_mode = st.session_state.get("flow_mode")
     stored_source_label = st.session_state.get("flow_source_label")
     stored_dataset_label = st.session_state.get("flow_dataset_label")
+    stored_pipeline_ver = st.session_state.get("flow_pipeline_version")
 
     selection_changed = False
     if stored_summary is not None:
-        if stored_fingerprint == fingerprint and stored_mode == mode_option:
+        if (
+            stored_fingerprint == fingerprint
+            and stored_mode == mode_option
+            and stored_pipeline_ver == pipeline_version
+        ):
             summary = stored_summary
             active_dataset_label = stored_dataset_label
             active_mode = stored_mode
@@ -303,11 +372,18 @@ def main() -> None:
 
     # Small caption above the results
     if summary is not None:
-        st.caption(f"Showing result for: {active_source_label}")
+        st.caption(f"Showing result for: {active_source_label} | Pipeline: {pipeline_version}")
 
     # Main Area Tabs
-    tab_overview, tab_explanation, tab_sources, tab_report, tab_performance = st.tabs(
-        ["Prediction Overview", "Attribution & Features", "Retrieved Sources", "Incident Report", "Model Performance"]
+    tab_overview, tab_explanation, tab_sources, tab_report, tab_performance, tab_paper = st.tabs(
+        [
+            "Prediction Overview",
+            "Attribution & Features",
+            "Retrieved Sources",
+            "Incident Report",
+            "Model Performance",
+            "Paper vs Ours",
+        ]
     )
 
     # Display Results if Available
@@ -315,14 +391,25 @@ def main() -> None:
         pred_class = summary["predicted_class"]
         confidence = float(summary["confidence"])
         tier = summary["tier"]
+        is_indicative = summary.get("is_indicative_only", False) or pred_class == "FTP-BruteForce"
 
         # TAB 1: Prediction Overview
         with tab_overview:
             st.subheader("Ensemble Classification Result")
+
+            if is_indicative:
+                st.warning(
+                    "DATA QUALITY NOTICE: FTP-BruteForce model evaluation is marked INDICATIVE ONLY "
+                    "due to severe deduplication reduction in CICIDS2018 (193,354 raw duplicate rows "
+                    "collapsed to 53 unique flows; N=53 total, 8 test flows). Results should be interpreted "
+                    "with caution."
+                )
+
             col1, col2, col3 = st.columns(3)
 
             with col1:
-                st.metric("Predicted Threat Category", pred_class)
+                display_pred = f"{pred_class} [INDICATIVE ONLY]" if is_indicative else pred_class
+                st.metric("Predicted Threat Category", display_pred)
             with col2:
                 st.metric("Model Confidence", f"{confidence:.4f}")
             with col3:
@@ -455,6 +542,14 @@ def main() -> None:
 
         render_performance_tab(repo_root)
 
+    # TAB 6: Paper vs Ours Benchmark Comparison
+    with tab_paper:
+        if str(app_dir) not in sys.path:
+            sys.path.insert(0, str(app_dir))
+        from paper_vs_ours_tab import render_paper_vs_ours_tab
+
+        render_paper_vs_ours_tab(repo_root)
+
     # Footer Disclaimer
     st.markdown("---")
     st.markdown(
@@ -462,7 +557,7 @@ def main() -> None:
         "<strong>Disclaimer:</strong> Automated Incident Response Demonstration. "
         "Generated for security analyst advisory purposes only. "
         "All mitigation guidelines must be reviewed by security personnel before deployment. "
-        "LLM-generated. Models trained on CICIDS2018, 3 classes only."
+        "LLM-generated. Supporting CICIDS2018 benchmark classes (v1: 3 classes; v2: +3 extra classes)."
         "</div>",
         unsafe_allow_html=True,
     )
@@ -488,4 +583,3 @@ def render_validation_summary(v: dict[str, Any]) -> None:
 
 if __name__ == "__main__":
     main()
-
