@@ -1,0 +1,144 @@
+{
+  "classes": [
+    "Benign",
+    "DoS",
+    "DDoS",
+    "Bot",
+    "FTP-BruteForce",
+    "SSH-Bruteforce"
+  ],
+  "sample_counts": {
+    "Benign": 3000,
+    "DoS": 3000,
+    "DDoS": 3000,
+    "Bot": 3000,
+    "FTP-BruteForce": 8,
+    "SSH-Bruteforce": 3000
+  },
+  "confusion_matrix": [
+    [
+      2988,
+      5,
+      7,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      2998,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      3000,
+      0,
+      0,
+      0
+    ],
+    [
+      2983,
+      0,
+      4,
+      13,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      8,
+      0
+    ],
+    [
+      2993,
+      0,
+      0,
+      0,
+      0,
+      7
+    ]
+  ],
+  "per_class_metrics": {
+    "Benign": {
+      "true_count": 3000,
+      "correct": 2988,
+      "recall": 0.996,
+      "is_indicative_only": false
+    },
+    "DoS": {
+      "true_count": 3000,
+      "correct": 2998,
+      "recall": 0.999333,
+      "is_indicative_only": false
+    },
+    "DDoS": {
+      "true_count": 3000,
+      "correct": 3000,
+      "recall": 1.0,
+      "is_indicative_only": false
+    },
+    "Bot": {
+      "true_count": 3000,
+      "correct": 13,
+      "recall": 0.004333,
+      "is_indicative_only": false
+    },
+    "FTP-BruteForce": {
+      "true_count": 8,
+      "correct": 8,
+      "recall": 1.0,
+      "is_indicative_only": true
+    },
+    "SSH-Bruteforce": {
+      "true_count": 3000,
+      "correct": 7,
+      "recall": 0.002333,
+      "is_indicative_only": false
+    }
+  },
+  "baseline_leakage_to_extra": {
+    "total_baseline_tested": 9000,
+    "total_misclassified_into_extra": 1,
+    "leakage_rate": 0.000111,
+    "per_class": {
+      "Benign": {
+        "total_tested": 3000,
+        "misclassified_as_extra": 0,
+        "leakage_percent": 0.0,
+        "breakdown": {
+          "Bot": 0,
+          "FTP-BruteForce": 0,
+          "SSH-Bruteforce": 0
+        }
+      },
+      "DoS": {
+        "total_tested": 3000,
+        "misclassified_as_extra": 1,
+        "leakage_percent": 0.0333,
+        "breakdown": {
+          "Bot": 0,
+          "FTP-BruteForce": 1,
+          "SSH-Bruteforce": 0
+        }
+      },
+      "DDoS": {
+        "total_tested": 3000,
+        "misclassified_as_extra": 0,
+        "leakage_percent": 0.0,
+        "breakdown": {
+          "Bot": 0,
+          "FTP-BruteForce": 0,
+          "SSH-Bruteforce": 0
+        }
+      }
+    }
+  },
+  "data_notice": "FTP-BruteForce has limited test flows and is indicative only."
+}

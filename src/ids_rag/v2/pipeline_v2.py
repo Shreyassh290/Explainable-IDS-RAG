@@ -91,37 +91,173 @@ def check_v2_output_safety(out_path: Path | str) -> None:
             )
 
 
+def predict_gated_decision(
+    probabilities: np.ndarray | Sequence[float],
+    include_ftp: bool = True,
+    threshold: float = 0.5,
+) -> tuple[int, float] | tuple[np.ndarray, np.ndarray]:
+    """Pure function implementing the gated decision rule.
+
+    If max over extra-class probabilities >= threshold (0.5), predict the most
+    probable extra class; otherwise predict argmax over baseline probabilities.
+
+    Args:
+        probabilities: 6-class probabilities ordered:
+            [0: Benign, 1: DoS, 2: DDoS, 3: Bot, 4: FTP-BruteForce, 5: SSH-Bruteforce]
+        include_ftp: whether to include FTP-BruteForce (ID 4) in the gate (default True)
+        threshold: fixed threshold (default 0.5)
+
+    Returns:
+        For 1D input (single flow): (predicted_class_id, confidence)
+        For 2D input (batch of flows): (predicted_class_ids, confidences)
+    """
+    probs = np.asarray(probabilities, dtype=np.float32)
+    is_1d = probs.ndim == 1
+    if is_1d:
+        probs = probs.reshape(1, -1)
+
+    extra_cids = [3, 4, 5] if include_ftp else [3, 5]
+    baseline_cids = [0, 1, 2]
+
+    extra_probs = probs[:, extra_cids]
+    max_extra = np.max(extra_probs, axis=1)
+    best_extra_sub_idx = np.argmax(extra_probs, axis=1)
+    best_extra_cids = np.array([extra_cids[i] for i in best_extra_sub_idx], dtype=np.int64)
+
+    baseline_probs = probs[:, baseline_cids]
+    max_baseline = np.max(baseline_probs, axis=1)
+    best_baseline_cids = np.argmax(baseline_probs, axis=1).astype(np.int64)
+
+    gate_mask = max_extra >= threshold
+    y_pred = np.where(gate_mask, best_extra_cids, best_baseline_cids)
+    confidences = np.where(gate_mask, max_extra, max_baseline)
+
+    if is_1d:
+        return int(y_pred[0]), float(confidences[0])
+    return y_pred, confidences
+
+
+class GatedBinaryDNNEnsemble(BinaryDNNEnsemble):
+    """Unified 6-class neural ensemble supporting gated decision rule and fallback argmax."""
+
+    def __init__(
+        self,
+        models: dict[int, nn.Module],
+        label_map: dict[int, str],
+        feature_names: list[str],
+        tiers_config: dict[str, float] | None = None,
+        temperatures: dict[str, float] | None = None,
+        use_temperature: bool = False,
+        device: torch.device | None = None,
+        decision_rule: str = "gate",
+        include_ftp_in_gate: bool = True,
+        threshold: float = 0.5,
+    ) -> None:
+        super().__init__(
+            models=models,
+            label_map=label_map,
+            feature_names=feature_names,
+            tiers_config=tiers_config,
+            temperatures=temperatures,
+            use_temperature=use_temperature,
+            device=device,
+        )
+        self.decision_rule = decision_rule
+        self.include_ftp_in_gate = include_ftp_in_gate
+        self.threshold = threshold
+
+    def predict(
+        self,
+        x: pd.DataFrame | np.ndarray | torch.Tensor,
+        decision_rule: str | None = None,
+        include_ftp: bool | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        rule = decision_rule if decision_rule is not None else self.decision_rule
+        if rule != "gate" or len(self.models) < 6:
+            return super().predict(x)
+
+        ftp_flag = include_ftp if include_ftp is not None else self.include_ftp_in_gate
+        probs = self.predict_proba(x)
+
+        pred_labels, confidences = predict_gated_decision(
+            probs,
+            include_ftp=ftp_flag,
+            threshold=self.threshold,
+        )
+
+        tiers = assign_tiers(confidences, self.tiers_config)
+        return pred_labels, confidences, tiers
+
+
 def load_v2_ensemble(
     models_dir: Path | str | None = None,
     label_map_path: Path | str | None = None,
     feature_names_path: Path | str | None = None,
     device: torch.device | None = None,
-) -> BinaryDNNEnsemble:
-    """Load the v2 binary DNN models from models_v2/ into a BinaryDNNEnsemble."""
+    cfg: dict[str, Any] | None = None,
+    six_class: bool = False,
+) -> BinaryDNNEnsemble | GatedBinaryDNNEnsemble:
+    """Load v2 binary DNN models.
+
+    If six_class=True, loads all 6 models (Benign, DoS, DDoS from models/ and
+    Bot, FTP-BruteForce, SSH-Bruteforce from extra_models_dir, e.g. models_v2b)
+    wrapped in GatedBinaryDNNEnsemble.
+    If six_class=False, loads the 3 extra models (Bot, FTP-BruteForce, SSH-Bruteforce)
+    into standard BinaryDNNEnsemble for backward compatibility.
+    """
     root = get_project_root()
-    cfg = load_v2_config()
+    if cfg is None:
+        cfg = load_v2_config()
+
+    v2_cfg = cfg.get("v2", {})
+    decision_rule = v2_cfg.get("decision_rule", "gate")
+    include_ftp_in_gate = v2_cfg.get("include_ftp_in_gate", True)
+    extra_dir_name = v2_cfg.get("extra_models_dir", cfg.get("paths", {}).get("extra_models", "models_v2b"))
 
     if models_dir is None:
-        models_dir = root / "models_v2"
+        extra_models_dir = root / extra_dir_name
+        # Fallback to models_v2 if extra_models_dir does not exist
+        if not extra_models_dir.exists():
+            extra_models_dir = root / "models_v2"
     else:
-        models_dir = Path(models_dir)
+        extra_models_dir = Path(models_dir)
 
-    if label_map_path is None:
-        label_map_path = models_dir / "label_map_v2.json"
-    else:
-        label_map_path = Path(label_map_path)
+    baseline_models_dir = root / cfg.get("paths", {}).get("models", "models")
 
+    # Extra class mapping
+    extra_label_map: dict[int, str] = {
+        3: "Bot",
+        4: "FTP-BruteForce",
+        5: "SSH-Bruteforce",
+    }
+    six_class_label_map: dict[int, str] = {
+        0: "Benign",
+        1: "DoS",
+        2: "DDoS",
+        3: "Bot",
+        4: "FTP-BruteForce",
+        5: "SSH-Bruteforce",
+    }
+    label_map = six_class_label_map if six_class else extra_label_map
+
+    # Load 41 feature names
     if feature_names_path is None:
-        feature_names_path = models_dir / "feature_names_v2.json"
+        candidate_fns = [
+            extra_models_dir / "feature_names_v2b.json",
+            extra_models_dir / "feature_names_v2.json",
+            baseline_models_dir / "feature_names.json",
+        ]
+        feature_names = None
+        for p in candidate_fns:
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    feature_names = json.load(f)
+                break
+        if feature_names is None:
+            raise FileNotFoundError(f"Feature names file not found in {candidate_fns}")
     else:
-        feature_names_path = Path(feature_names_path)
-
-    with open(label_map_path, "r", encoding="utf-8") as f:
-        raw_map: dict[str, str] = json.load(f)
-    label_map = {int(k): v for k, v in raw_map.items()}
-
-    with open(feature_names_path, "r", encoding="utf-8") as f:
-        feature_names: list[str] = json.load(f)
+        with open(feature_names_path, "r", encoding="utf-8") as f:
+            feature_names = json.load(f)
 
     model_cfg = cfg.get("model", {})
     hidden = model_cfg.get("hidden", [128, 64, 32])
@@ -131,14 +267,36 @@ def load_v2_ensemble(
     target_device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     models: dict[int, BinaryDNN] = {}
 
-    for class_id, class_name in label_map.items():
-        weights_path = models_dir / f"dnn_v2_{class_name}.pt"
+    # 1. Baseline models (0: Benign, 1: DoS, 2: DDoS) from models/ if six_class=True
+    if six_class:
+        for cid in [0, 1, 2]:
+            cname = label_map[cid]
+            weights_path = baseline_models_dir / f"dnn_{cname}.pt"
+            if not weights_path.exists():
+                raise FileNotFoundError(f"Baseline model weights for '{cname}' not found at {weights_path}")
+            model = BinaryDNN(
+                in_features=len(feature_names),
+                hidden=hidden,
+                dropout=dropout,
+                use_batchnorm=use_batchnorm,
+            )
+            state_dict = torch.load(weights_path, map_location=target_device)
+            model.load_state_dict(state_dict)
+            model.to(target_device)
+            model.eval()
+            models[cid] = model
+
+    # 2. Extra models (3: Bot, 4: FTP-BruteForce, 5: SSH-Bruteforce) from extra_models_dir
+    for cid in [3, 4, 5]:
+        cname = label_map[cid]
+        weights_path = extra_models_dir / f"dnn_v2b_{cname}.pt"
+        if not weights_path.exists():
+            weights_path = extra_models_dir / f"dnn_v2_{cname}.pt"
         if not weights_path.exists():
             raise FileNotFoundError(
-                f"Model weights for '{class_name}' not found at {weights_path}. "
-                "Ensure Stage 2 training has been completed."
+                f"Extra model weights for '{cname}' not found at {extra_models_dir}/dnn_v2b_{cname}.pt "
+                f"or dnn_v2_{cname}.pt"
             )
-
         model = BinaryDNN(
             in_features=len(feature_names),
             hidden=hidden,
@@ -149,10 +307,24 @@ def load_v2_ensemble(
         model.load_state_dict(state_dict)
         model.to(target_device)
         model.eval()
-        models[class_id] = model
+        models[cid] = model
 
     ensemble_cfg = cfg.get("ensemble", {})
     tiers_cfg = ensemble_cfg.get("tiers", {"very_high": 0.95, "high": 0.70, "medium": 0.50})
+
+    if six_class:
+        return GatedBinaryDNNEnsemble(
+            models=models,
+            label_map=label_map,
+            feature_names=feature_names,
+            tiers_config=tiers_cfg,
+            temperatures={name: 1.0 for name in label_map.values()},
+            use_temperature=False,
+            device=target_device,
+            decision_rule=decision_rule,
+            include_ftp_in_gate=include_ftp_in_gate,
+            threshold=0.5,
+        )
 
     return BinaryDNNEnsemble(
         models=models,
@@ -163,6 +335,26 @@ def load_v2_ensemble(
         use_temperature=False,
         device=target_device,
     )
+
+
+def load_six_class_ensemble(
+    cfg: dict[str, Any] | None = None,
+    device: torch.device | None = None,
+) -> GatedBinaryDNNEnsemble:
+    """Load unified 6-class neural ensemble with gated decision rule."""
+    ens = load_v2_ensemble(cfg=cfg, device=device, six_class=True)
+    assert isinstance(ens, GatedBinaryDNNEnsemble)
+    return ens
+
+
+def build_six_class_ensemble(
+    ctx: PipelineV2Context,
+    cfg: dict[str, Any] | None = None,
+) -> GatedBinaryDNNEnsemble:
+    """Build unified 6-class ensemble combining baseline and extra binary DNNs."""
+    if len(ctx.ensemble.models) >= 6 and isinstance(ctx.ensemble, GatedBinaryDNNEnsemble):
+        return ctx.ensemble
+    return load_six_class_ensemble(cfg=cfg or ctx.cfg)
 
 
 class PipelineV2Context:
@@ -189,7 +381,11 @@ class PipelineV2Context:
         self.cfg = cfg or {}
 
     @classmethod
-    def load(cls, cfg: dict[str, Any] | None = None) -> "PipelineV2Context":
+    def load(
+        cls,
+        cfg: dict[str, Any] | None = None,
+        six_class: bool = False,
+    ) -> "PipelineV2Context":
         """Load v2 ensemble, scaler, feature names, KB index, and datasets from disk."""
         if cfg is None:
             cfg = load_v2_config()
@@ -203,8 +399,8 @@ class PipelineV2Context:
             raise FileNotFoundError(f"Scaler not found at: {scaler_path}")
         scaler = joblib.load(scaler_path)
 
-        # Load v2 ensemble
-        ensemble = load_v2_ensemble()
+        # Load v2 ensemble (six_class=True loads 6-class gated ensemble; False loads 3-class extra ensemble)
+        ensemble = load_v2_ensemble(cfg=cfg, six_class=six_class)
         feature_names = ensemble.feature_names
 
         # Load v2 KB and cross-encoder
@@ -242,6 +438,8 @@ def run_flow_v2(
     client: Any = None,
     out_dir: Path | str | None = None,
     ollama_version: str | None = None,
+    include_ftp_in_gate: bool | None = None,
+    decision_rule: str | None = None,
 ) -> dict[str, Any]:
     """Execute v2 inference and report generation for raw (unscaled) feature inputs.
 
@@ -295,7 +493,14 @@ def run_flow_v2(
 
     # 3. Predict threat category with v2 ensemble
     t0_ens = time.perf_counter()
-    pred_labels, confidences, tiers = ctx.ensemble.predict(x_scaled.reshape(1, -1))
+    if isinstance(ctx.ensemble, GatedBinaryDNNEnsemble):
+        pred_labels, confidences, tiers = ctx.ensemble.predict(
+            x_scaled.reshape(1, -1),
+            decision_rule=decision_rule,
+            include_ftp=include_ftp_in_gate,
+        )
+    else:
+        pred_labels, confidences, tiers = ctx.ensemble.predict(x_scaled.reshape(1, -1))
     pred_label = int(pred_labels[0])
     confidence = float(confidences[0])
     tier = str(tiers[0])
@@ -436,11 +641,16 @@ def run_flow_v2(
     if ollama_version is None:
         ollama_version = get_ollama_version()
 
+    used_decision_rule = decision_rule or getattr(ctx.ensemble, "decision_rule", "gate")
+    used_include_ftp = include_ftp_in_gate if include_ftp_in_gate is not None else getattr(ctx.ensemble, "include_ftp_in_gate", True)
+
     summary: dict[str, Any] = {
         "index": flow_id,
         "predicted_class": predicted_class,
         "confidence": confidence,
         "tier": tier,
+        "decision_rule": used_decision_rule,
+        "include_ftp_in_gate": used_include_ftp,
         "is_indicative_only": is_indicative,
         "indicative_warning": indicative_note,
         "explanation": explanation,

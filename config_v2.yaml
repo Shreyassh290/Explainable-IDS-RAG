@@ -4,12 +4,18 @@
 
 seed: 42
 
+v2:
+  decision_rule: "gate"
+  extra_models_dir: "models_v2b"
+  include_ftp_in_gate: true
+
 paths:
   raw: ../data/raw
   processed: data/v2/processed
   baseline_processed: data/processed
   kb: data/kb
   models: models
+  extra_models: models_v2b
   scaler: models/scaler.joblib
   feature_names: models/feature_names.json
   artifacts: artifacts

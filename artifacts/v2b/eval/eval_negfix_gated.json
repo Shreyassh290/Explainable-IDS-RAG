@@ -1,0 +1,727 @@
+{
+  "threshold": 0.5,
+  "validation_behavior": {
+    "gated_with_ftp": {
+      "include_ftp": true,
+      "baseline_val_rows": 119454,
+      "baseline_leaked_count": 166,
+      "baseline_leakage_rate": 0.00139,
+      "bot_val_rows": 21680,
+      "bot_val_recall": 0.998755,
+      "ssh_val_rows": 14107,
+      "ssh_val_recall": 0.999929,
+      "ftp_val_rows": 8,
+      "ftp_val_recall": 1.0
+    },
+    "gated_without_ftp": {
+      "include_ftp": false,
+      "baseline_val_rows": 119454,
+      "baseline_leaked_count": 133,
+      "baseline_leakage_rate": 0.001113,
+      "bot_val_rows": 21680,
+      "bot_val_recall": 0.998755,
+      "ssh_val_rows": 14107,
+      "ssh_val_recall": 0.999929,
+      "ftp_val_rows": 8,
+      "ftp_val_recall": null
+    }
+  },
+  "gated_with_ftp": {
+    "mixed_sample_15008": {
+      "title": "GATED DECISION RULE (WITH FTP)",
+      "classes": [
+        "Benign",
+        "DoS",
+        "DDoS",
+        "Bot",
+        "FTP-BruteForce",
+        "SSH-Bruteforce"
+      ],
+      "sample_counts": {
+        "Benign": 3000,
+        "DoS": 3000,
+        "DDoS": 3000,
+        "Bot": 3000,
+        "FTP-BruteForce": 8,
+        "SSH-Bruteforce": 3000
+      },
+      "confusion_matrix": [
+        [
+          2976,
+          5,
+          7,
+          10,
+          1,
+          1
+        ],
+        [
+          1,
+          2998,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          3000,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          3,
+          2996,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          8,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          3000
+        ]
+      ],
+      "per_class_metrics": {
+        "Benign": {
+          "true_count": 3000,
+          "correct": 2976,
+          "recall": 0.992,
+          "is_indicative_only": false
+        },
+        "DoS": {
+          "true_count": 3000,
+          "correct": 2998,
+          "recall": 0.999333,
+          "is_indicative_only": false
+        },
+        "DDoS": {
+          "true_count": 3000,
+          "correct": 3000,
+          "recall": 1.0,
+          "is_indicative_only": false
+        },
+        "Bot": {
+          "true_count": 3000,
+          "correct": 2996,
+          "recall": 0.998667,
+          "is_indicative_only": false
+        },
+        "FTP-BruteForce": {
+          "true_count": 8,
+          "correct": 8,
+          "recall": 1.0,
+          "is_indicative_only": true
+        },
+        "SSH-Bruteforce": {
+          "true_count": 3000,
+          "correct": 3000,
+          "recall": 1.0,
+          "is_indicative_only": false
+        }
+      },
+      "baseline_leakage_to_extra": {
+        "total_baseline_tested": 9000,
+        "total_misclassified_into_extra": 13,
+        "leakage_rate": 0.001444,
+        "per_class": {
+          "Benign": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 12,
+            "leakage_percent": 0.4,
+            "breakdown": {
+              "Bot": 10,
+              "FTP-BruteForce": 1,
+              "SSH-Bruteforce": 1
+            }
+          },
+          "DoS": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 1,
+            "leakage_percent": 0.0333,
+            "breakdown": {
+              "Bot": 0,
+              "FTP-BruteForce": 1,
+              "SSH-Bruteforce": 0
+            }
+          },
+          "DDoS": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 0,
+            "leakage_percent": 0.0,
+            "breakdown": {
+              "Bot": 0,
+              "FTP-BruteForce": 0,
+              "SSH-Bruteforce": 0
+            }
+          }
+        }
+      }
+    },
+    "full_baseline_test_119454": {
+      "title": "GATED DECISION RULE (WITH FTP)",
+      "accuracy": 0.997145,
+      "per_class": {
+        "Benign": {
+          "n_true": 45000,
+          "n_correct": 44689,
+          "recall": 0.993089,
+          "f1": 0.996277
+        },
+        "DoS": {
+          "n_true": 29454,
+          "n_correct": 29440,
+          "recall": 0.999525,
+          "f1": 0.999033
+        },
+        "DDoS": {
+          "n_true": 45000,
+          "n_correct": 44984,
+          "recall": 0.999644,
+          "f1": 0.998502
+        }
+      },
+      "baseline_flows_predicted_as_extra": {
+        "total": 156,
+        "rate": 0.001306,
+        "breakdown": {
+          "Bot": 124,
+          "FTP-BruteForce": 26,
+          "SSH-Bruteforce": 6
+        }
+      }
+    },
+    "demo_samples": {
+      "title": "GATED DECISION RULE (WITH FTP)",
+      "total": 18,
+      "matches": 15,
+      "match_rate": 0.833333,
+      "per_sample": [
+        {
+          "idx": 1,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 2,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 3,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 4,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "FTP-BruteForce",
+          "match": false
+        },
+        {
+          "idx": 5,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "FTP-BruteForce",
+          "match": false
+        },
+        {
+          "idx": 6,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "FTP-BruteForce",
+          "match": false
+        },
+        {
+          "idx": 7,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 8,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 9,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 10,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 11,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 12,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 13,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "FTP-BruteForce",
+          "match": true
+        },
+        {
+          "idx": 14,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "FTP-BruteForce",
+          "match": true
+        },
+        {
+          "idx": 15,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "FTP-BruteForce",
+          "match": true
+        },
+        {
+          "idx": 16,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        },
+        {
+          "idx": 17,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        },
+        {
+          "idx": 18,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        }
+      ]
+    },
+    "acceptance_criteria": {
+      "baseline_accuracy": {
+        "value": 0.997145,
+        "threshold": 0.995,
+        "pass": true
+      },
+      "baseline_min_f1": {
+        "values": {
+          "Benign": 0.996277,
+          "DoS": 0.999033,
+          "DDoS": 0.998502
+        },
+        "min_class": "Benign",
+        "min_value": 0.996277,
+        "threshold": 0.995,
+        "pass": true
+      },
+      "baseline_leakage": {
+        "value": 0.001444,
+        "threshold": 0.005,
+        "pass": true
+      },
+      "bot_recall": {
+        "value": 0.998667,
+        "threshold": 0.95,
+        "pass": true
+      },
+      "ssh_recall": {
+        "value": 1.0,
+        "threshold": 0.95,
+        "pass": true
+      },
+      "ftp_recall_indicative": {
+        "value": 1.0,
+        "note": "FTP-BruteForce is indicative only - not a pass/fail criterion"
+      },
+      "overall_pass": true
+    }
+  },
+  "gated_without_ftp": {
+    "mixed_sample_15008": {
+      "title": "GATED DECISION RULE (WITHOUT FTP)",
+      "classes": [
+        "Benign",
+        "DoS",
+        "DDoS",
+        "Bot",
+        "FTP-BruteForce",
+        "SSH-Bruteforce"
+      ],
+      "sample_counts": {
+        "Benign": 3000,
+        "DoS": 3000,
+        "DDoS": 3000,
+        "Bot": 3000,
+        "FTP-BruteForce": 8,
+        "SSH-Bruteforce": 3000
+      },
+      "confusion_matrix": [
+        [
+          2977,
+          5,
+          7,
+          10,
+          0,
+          1
+        ],
+        [
+          1,
+          2999,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3000,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          3,
+          2996,
+          0,
+          0
+        ],
+        [
+          0,
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          3000
+        ]
+      ],
+      "per_class_metrics": {
+        "Benign": {
+          "true_count": 3000,
+          "correct": 2977,
+          "recall": 0.992333,
+          "is_indicative_only": false
+        },
+        "DoS": {
+          "true_count": 3000,
+          "correct": 2999,
+          "recall": 0.999667,
+          "is_indicative_only": false
+        },
+        "DDoS": {
+          "true_count": 3000,
+          "correct": 3000,
+          "recall": 1.0,
+          "is_indicative_only": false
+        },
+        "Bot": {
+          "true_count": 3000,
+          "correct": 2996,
+          "recall": 0.998667,
+          "is_indicative_only": false
+        },
+        "FTP-BruteForce": {
+          "true_count": 8,
+          "correct": 0,
+          "recall": 0.0,
+          "is_indicative_only": true
+        },
+        "SSH-Bruteforce": {
+          "true_count": 3000,
+          "correct": 3000,
+          "recall": 1.0,
+          "is_indicative_only": false
+        }
+      },
+      "baseline_leakage_to_extra": {
+        "total_baseline_tested": 9000,
+        "total_misclassified_into_extra": 11,
+        "leakage_rate": 0.001222,
+        "per_class": {
+          "Benign": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 11,
+            "leakage_percent": 0.3667,
+            "breakdown": {
+              "Bot": 10,
+              "SSH-Bruteforce": 1
+            }
+          },
+          "DoS": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 0,
+            "leakage_percent": 0.0,
+            "breakdown": {
+              "Bot": 0,
+              "SSH-Bruteforce": 0
+            }
+          },
+          "DDoS": {
+            "total_tested": 3000,
+            "misclassified_as_extra": 0,
+            "leakage_percent": 0.0,
+            "breakdown": {
+              "Bot": 0,
+              "SSH-Bruteforce": 0
+            }
+          }
+        }
+      }
+    },
+    "full_baseline_test_119454": {
+      "title": "GATED DECISION RULE (WITHOUT FTP)",
+      "accuracy": 0.997363,
+      "per_class": {
+        "Benign": {
+          "n_true": 45000,
+          "n_correct": 44708,
+          "recall": 0.993511,
+          "f1": 0.99649
+        },
+        "DoS": {
+          "n_true": 29454,
+          "n_correct": 29447,
+          "recall": 0.999762,
+          "f1": 0.999152
+        },
+        "DDoS": {
+          "n_true": 45000,
+          "n_correct": 44984,
+          "recall": 0.999644,
+          "f1": 0.998502
+        }
+      },
+      "baseline_flows_predicted_as_extra": {
+        "total": 130,
+        "rate": 0.001088,
+        "breakdown": {
+          "Bot": 124,
+          "SSH-Bruteforce": 6
+        }
+      }
+    },
+    "demo_samples": {
+      "title": "GATED DECISION RULE (WITHOUT FTP)",
+      "total": 18,
+      "matches": 15,
+      "match_rate": 0.833333,
+      "per_sample": [
+        {
+          "idx": 1,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 2,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 3,
+          "raw_label": "Benign",
+          "normalized_source": "Benign",
+          "predicted_class": "Benign",
+          "match": true
+        },
+        {
+          "idx": 4,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "DoS",
+          "match": true
+        },
+        {
+          "idx": 5,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "DoS",
+          "match": true
+        },
+        {
+          "idx": 6,
+          "raw_label": "DoS attacks-SlowHTTPTest",
+          "normalized_source": "DoS",
+          "predicted_class": "DoS",
+          "match": true
+        },
+        {
+          "idx": 7,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 8,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 9,
+          "raw_label": "DDoS attacks-LOIC-HTTP",
+          "normalized_source": "DDoS",
+          "predicted_class": "DDoS",
+          "match": true
+        },
+        {
+          "idx": 10,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 11,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 12,
+          "raw_label": "Bot",
+          "normalized_source": "Bot",
+          "predicted_class": "Bot",
+          "match": true
+        },
+        {
+          "idx": 13,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "Benign",
+          "match": false
+        },
+        {
+          "idx": 14,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "DoS",
+          "match": false
+        },
+        {
+          "idx": 15,
+          "raw_label": "FTP-BruteForce",
+          "normalized_source": "FTP-BruteForce",
+          "predicted_class": "DoS",
+          "match": false
+        },
+        {
+          "idx": 16,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        },
+        {
+          "idx": 17,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        },
+        {
+          "idx": 18,
+          "raw_label": "SSH-Bruteforce",
+          "normalized_source": "SSH-Bruteforce",
+          "predicted_class": "SSH-Bruteforce",
+          "match": true
+        }
+      ]
+    },
+    "acceptance_criteria": {
+      "baseline_accuracy": {
+        "value": 0.997363,
+        "threshold": 0.995,
+        "pass": true
+      },
+      "baseline_min_f1": {
+        "values": {
+          "Benign": 0.99649,
+          "DoS": 0.999152,
+          "DDoS": 0.998502
+        },
+        "min_class": "Benign",
+        "min_value": 0.99649,
+        "threshold": 0.995,
+        "pass": true
+      },
+      "baseline_leakage": {
+        "value": 0.001222,
+        "threshold": 0.005,
+        "pass": true
+      },
+      "bot_recall": {
+        "value": 0.998667,
+        "threshold": 0.95,
+        "pass": true
+      },
+      "ssh_recall": {
+        "value": 1.0,
+        "threshold": 0.95,
+        "pass": true
+      },
+      "ftp_recall_indicative": {
+        "value": 0.0,
+        "note": "FTP-BruteForce is indicative only - not a pass/fail criterion"
+      },
+      "overall_pass": true
+    }
+  }
+}

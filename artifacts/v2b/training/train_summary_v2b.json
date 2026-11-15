@@ -1,0 +1,42 @@
+{
+  "total_elapsed_seconds": 425.78055309999036,
+  "device": "cpu",
+  "seed": 42,
+  "baseline_ratio": 3,
+  "models_dir": "C:\\Users\\shrey\\Downloads\\AIML_Project\\ids-rag-mitigation\\models_v2b",
+  "negatives_strategy": "extra-class negatives + stratified baseline negatives (Benign/DoS/DDoS, ratio=3)",
+  "classes_trained": [
+    "Bot",
+    "FTP-BruteForce",
+    "SSH-Bruteforce"
+  ],
+  "per_class": {
+    "Bot": {
+      "best_epoch": 6,
+      "val_roc_auc": 0.9999927687843531,
+      "val_f1_threshold_0_5": 0.9981560872170746,
+      "val_macro_f1": 0.9987704790584273,
+      "n_pos_train": 101174,
+      "n_neg_train": 303522,
+      "is_indicative_only": false
+    },
+    "FTP-BruteForce": {
+      "best_epoch": 6,
+      "val_roc_auc": 0.9999755490974124,
+      "val_f1_threshold_0_5": 0.8888888888888888,
+      "val_macro_f1": 0.9444351296413593,
+      "n_pos_train": 37,
+      "n_neg_train": 250510,
+      "is_indicative_only": true
+    },
+    "SSH-Bruteforce": {
+      "best_epoch": 12,
+      "val_roc_auc": 0.9999999826286243,
+      "val_f1_threshold_0_5": 0.9999291132062097,
+      "val_macro_f1": 0.9999528871746735,
+      "n_pos_train": 65834,
+      "n_neg_train": 199962,
+      "is_indicative_only": false
+    }
+  }
+}

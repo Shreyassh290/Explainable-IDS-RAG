@@ -1,0 +1,32 @@
+NEGFIX V2 EVALUATION REPORT
+============================================================
+
+--- D1: ISOLATED EXTRA-CLASS ---
+  Accuracy: 0.9999
+  Bot: Recall=100.00% (21680/21681)
+  FTP-BruteForce: Recall=100.00% (8/8) [INDICATIVE ONLY]
+  SSH-Bruteforce: Recall=99.99% (14106/14107)
+
+--- D2: MIXED 6-CLASS CONFUSION ---
+  Benign: Recall=99.60% (2988/3000)
+  DoS: Recall=99.93% (2998/3000)
+  DDoS: Recall=100.00% (3000/3000)
+  Bot: Recall=0.43% (13/3000)
+  FTP-BruteForce: Recall=100.00% (8/8) [INDICATIVE ONLY]
+  SSH-Bruteforce: Recall=0.23% (7/3000)
+  Baseline leakage: 1/9000 (0.0111%)
+
+--- D3: FULL BASELINE TEST ---
+  Accuracy: 0.9983
+  Benign: Recall=99.62% F1=0.9979 (44831/45000)
+  DoS: Recall=99.95% F1=0.9990 (29440/29454)
+  DDoS: Recall=99.96% F1=0.9985 (44984/45000)
+
+--- ACCEPTANCE CRITERIA ---
+  baseline_accuracy: PASS (value=0.998334, threshold=0.995)
+  baseline_min_f1: PASS (value=0.997863, threshold=0.995)
+  baseline_leakage: PASS (value=0.000111, threshold=0.005)
+  bot_recall: FAIL (value=0.004333, threshold=0.95)
+  ssh_recall: FAIL (value=0.002333, threshold=0.95)
+  FTP recall (indicative): 1.0
+  OVERALL: FAIL

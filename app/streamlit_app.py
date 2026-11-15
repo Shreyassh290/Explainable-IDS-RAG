@@ -48,9 +48,9 @@ def load_app_context() -> tuple[PipelineContext, dict[str, Any]]:
 
 @st.cache_resource
 def load_app_context_v2() -> tuple[PipelineV2Context, dict[str, Any]]:
-    """Load and cache the v2 PipelineV2Context (models_v2, merged v2 KB) once."""
+    """Load and cache the v2 PipelineV2Context (models_v2b, 6-class gate, merged v2 KB) once."""
     cfg = load_v2_config()
-    ctx = PipelineV2Context.load(cfg)
+    ctx = PipelineV2Context.load(cfg, six_class=True)
     return ctx, cfg
 
 
@@ -119,6 +119,15 @@ def main() -> None:
         index=0,
     )
     is_v2 = pipeline_version.startswith("v2")
+
+    include_ftp_in_gate = True
+    if is_v2:
+        st.sidebar.caption("Six-class mode: Bot and SSH validated; FTP indicative only.")
+        include_ftp_in_gate = st.sidebar.checkbox(
+            "Include FTP (indicative, only 37 training flows)",
+            value=True,
+            help="When unchecked, the FTP-BruteForce model is excluded from the decision gate.",
+        )
 
     # Context Loading
     with st.spinner("Loading neural ensemble, knowledge index, and scalers..."):
@@ -267,7 +276,8 @@ def main() -> None:
     demo_runs_dir.mkdir(parents=True, exist_ok=True)
 
     fingerprint = get_features_fingerprint(flow_features)
-    cache_key = f"{'v2_' if is_v2 else ''}{input_identifier}_{fingerprint}_{mode_option}.json"
+    ftp_tag = "_no_ftp" if (is_v2 and not include_ftp_in_gate) else ""
+    cache_key = f"{'v2_' if is_v2 else ''}{input_identifier}_{fingerprint}_{mode_option}{ftp_tag}.json"
     cache_path = demo_cache_dir / cache_key
 
     # Execute or Load
@@ -302,6 +312,7 @@ def main() -> None:
                             modes=mode_option,
                             generate=True,
                             out_dir=demo_runs_dir,
+                            include_ftp_in_gate=include_ftp_in_gate,
                         )
                     else:
                         summary = run_flow(
@@ -540,7 +551,7 @@ def main() -> None:
             sys.path.insert(0, str(app_dir))
         from performance_tab import render_performance_tab
 
-        render_performance_tab(repo_root)
+        render_performance_tab(repo_root, is_v2=is_v2)
 
     # TAB 6: Paper vs Ours Benchmark Comparison
     with tab_paper:
@@ -548,7 +559,7 @@ def main() -> None:
             sys.path.insert(0, str(app_dir))
         from paper_vs_ours_tab import render_paper_vs_ours_tab
 
-        render_paper_vs_ours_tab(repo_root)
+        render_paper_vs_ours_tab(repo_root, is_v2=is_v2)
 
     # Footer Disclaimer
     st.markdown("---")

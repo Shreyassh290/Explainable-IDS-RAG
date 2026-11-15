@@ -25,40 +25,8 @@ sys.path.insert(0, str(repo_root / "src"))
 
 from ids_rag.models.ensemble import BinaryDNNEnsemble
 from ids_rag.pipeline import validate_raw_features
-from ids_rag.v2.pipeline_v2 import PipelineV2Context
+from ids_rag.v2.pipeline_v2 import PipelineV2Context, build_six_class_ensemble
 from ids_rag.v2.prepare_extra import load_v2_config
-
-
-def build_six_class_ensemble(ctx: PipelineV2Context) -> BinaryDNNEnsemble:
-    """Build a unified 6-class ensemble combining baseline and extra binary DNNs."""
-    if len(ctx.ensemble.models) >= 6:
-        return ctx.ensemble
-
-    models_dir = repo_root / "models"
-    base_ensemble = BinaryDNNEnsemble.load(models_dir=models_dir, use_temperature=False)
-
-    combined_models: dict[int, Any] = {}
-    combined_label_map: dict[int, str] = {}
-
-    # 0: Benign, 1: DoS, 2: DDoS
-    for cid, m in base_ensemble.models.items():
-        combined_models[cid] = m
-        combined_label_map[cid] = base_ensemble.label_map[cid]
-
-    # 3: Bot, 4: FTP-BruteForce, 5: SSH-Bruteforce
-    for cid, m in ctx.ensemble.models.items():
-        combined_models[cid] = m
-        combined_label_map[cid] = ctx.ensemble.label_map[cid]
-
-    return BinaryDNNEnsemble(
-        models=combined_models,
-        label_map=combined_label_map,
-        feature_names=ctx.feature_names,
-        tiers_config=ctx.ensemble.tiers_config,
-        temperatures={name: 1.0 for name in combined_label_map.values()},
-        use_temperature=False,
-        device=ctx.ensemble.device,
-    )
 
 
 def normalize_source_label(lbl: str) -> str:
@@ -81,15 +49,24 @@ def normalize_source_label(lbl: str) -> str:
 
 
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Verify V2 demo samples by running 6-class neural ensemble predictions.")
+    parser.add_argument("--exclude-ftp", action="store_true", help="Exclude FTP-BruteForce from the gated decision rule.")
+    args = parser.parse_args()
+
     csv_path = repo_root / "app" / "raw_samples_v2.csv"
     if not csv_path.exists():
         print(f"ERROR: {csv_path} does not exist. Run scripts/v2_extract_demo_samples.py first.", file=sys.stderr)
         sys.exit(1)
 
-    print("Initializing V2 pipeline context and 6-class neural ensemble...")
+    include_ftp = not args.exclude_ftp
+    ftp_status = "WITH FTP" if include_ftp else "WITHOUT FTP"
+    print(f"Initializing V2 pipeline context and 6-class neural ensemble ({ftp_status})...")
     cfg = load_v2_config()
     ctx = PipelineV2Context.load(cfg)
     ensemble = build_six_class_ensemble(ctx)
+    if hasattr(ensemble, "include_ftp_in_gate"):
+        ensemble.include_ftp_in_gate = include_ftp
 
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)

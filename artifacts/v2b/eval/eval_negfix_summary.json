@@ -1,0 +1,363 @@
+{
+  "d1_isolated_extra": {
+    "accuracy": 0.999944,
+    "per_class": {
+      "Bot": {
+        "n_true": 21681,
+        "n_correct": 21680,
+        "recall": 0.999954,
+        "is_indicative_only": false
+      },
+      "FTP-BruteForce": {
+        "n_true": 8,
+        "n_correct": 8,
+        "recall": 1.0,
+        "is_indicative_only": true
+      },
+      "SSH-Bruteforce": {
+        "n_true": 14107,
+        "n_correct": 14106,
+        "recall": 0.999929,
+        "is_indicative_only": false
+      }
+    }
+  },
+  "d2_mixed_6class": {
+    "classes": [
+      "Benign",
+      "DoS",
+      "DDoS",
+      "Bot",
+      "FTP-BruteForce",
+      "SSH-Bruteforce"
+    ],
+    "sample_counts": {
+      "Benign": 3000,
+      "DoS": 3000,
+      "DDoS": 3000,
+      "Bot": 3000,
+      "FTP-BruteForce": 8,
+      "SSH-Bruteforce": 3000
+    },
+    "confusion_matrix": [
+      [
+        2988,
+        5,
+        7,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        2998,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        3000,
+        0,
+        0,
+        0
+      ],
+      [
+        2983,
+        0,
+        4,
+        13,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        8,
+        0
+      ],
+      [
+        2993,
+        0,
+        0,
+        0,
+        0,
+        7
+      ]
+    ],
+    "per_class_metrics": {
+      "Benign": {
+        "true_count": 3000,
+        "correct": 2988,
+        "recall": 0.996,
+        "is_indicative_only": false
+      },
+      "DoS": {
+        "true_count": 3000,
+        "correct": 2998,
+        "recall": 0.999333,
+        "is_indicative_only": false
+      },
+      "DDoS": {
+        "true_count": 3000,
+        "correct": 3000,
+        "recall": 1.0,
+        "is_indicative_only": false
+      },
+      "Bot": {
+        "true_count": 3000,
+        "correct": 13,
+        "recall": 0.004333,
+        "is_indicative_only": false
+      },
+      "FTP-BruteForce": {
+        "true_count": 8,
+        "correct": 8,
+        "recall": 1.0,
+        "is_indicative_only": true
+      },
+      "SSH-Bruteforce": {
+        "true_count": 3000,
+        "correct": 7,
+        "recall": 0.002333,
+        "is_indicative_only": false
+      }
+    },
+    "baseline_leakage_to_extra": {
+      "total_baseline_tested": 9000,
+      "total_misclassified_into_extra": 1,
+      "leakage_rate": 0.000111,
+      "per_class": {
+        "Benign": {
+          "total_tested": 3000,
+          "misclassified_as_extra": 0,
+          "leakage_percent": 0.0,
+          "breakdown": {
+            "Bot": 0,
+            "FTP-BruteForce": 0,
+            "SSH-Bruteforce": 0
+          }
+        },
+        "DoS": {
+          "total_tested": 3000,
+          "misclassified_as_extra": 1,
+          "leakage_percent": 0.0333,
+          "breakdown": {
+            "Bot": 0,
+            "FTP-BruteForce": 1,
+            "SSH-Bruteforce": 0
+          }
+        },
+        "DDoS": {
+          "total_tested": 3000,
+          "misclassified_as_extra": 0,
+          "leakage_percent": 0.0,
+          "breakdown": {
+            "Bot": 0,
+            "FTP-BruteForce": 0,
+            "SSH-Bruteforce": 0
+          }
+        }
+      }
+    },
+    "data_notice": "FTP-BruteForce has limited test flows and is indicative only."
+  },
+  "d3_full_baseline": {
+    "accuracy": 0.998334,
+    "per_class": {
+      "Benign": {
+        "n_true": 45000,
+        "n_correct": 44831,
+        "recall": 0.996244,
+        "f1": 0.997863
+      },
+      "DoS": {
+        "n_true": 29454,
+        "n_correct": 29440,
+        "recall": 0.999525,
+        "f1": 0.999033
+      },
+      "DDoS": {
+        "n_true": 45000,
+        "n_correct": 44984,
+        "recall": 0.999644,
+        "f1": 0.998502
+      }
+    }
+  },
+  "d4_demo_samples": {
+    "total": 18,
+    "matches": 10,
+    "match_rate": 0.555556,
+    "per_sample": [
+      {
+        "idx": 1,
+        "raw_label": "Benign",
+        "normalized_source": "Benign",
+        "predicted_class": "Benign",
+        "match": true
+      },
+      {
+        "idx": 2,
+        "raw_label": "Benign",
+        "normalized_source": "Benign",
+        "predicted_class": "Benign",
+        "match": true
+      },
+      {
+        "idx": 3,
+        "raw_label": "Benign",
+        "normalized_source": "Benign",
+        "predicted_class": "Benign",
+        "match": true
+      },
+      {
+        "idx": 4,
+        "raw_label": "DoS attacks-SlowHTTPTest",
+        "normalized_source": "DoS",
+        "predicted_class": "FTP-BruteForce",
+        "match": false
+      },
+      {
+        "idx": 5,
+        "raw_label": "DoS attacks-SlowHTTPTest",
+        "normalized_source": "DoS",
+        "predicted_class": "FTP-BruteForce",
+        "match": false
+      },
+      {
+        "idx": 6,
+        "raw_label": "DoS attacks-SlowHTTPTest",
+        "normalized_source": "DoS",
+        "predicted_class": "FTP-BruteForce",
+        "match": false
+      },
+      {
+        "idx": 7,
+        "raw_label": "DDoS attacks-LOIC-HTTP",
+        "normalized_source": "DDoS",
+        "predicted_class": "DDoS",
+        "match": true
+      },
+      {
+        "idx": 8,
+        "raw_label": "DDoS attacks-LOIC-HTTP",
+        "normalized_source": "DDoS",
+        "predicted_class": "DDoS",
+        "match": true
+      },
+      {
+        "idx": 9,
+        "raw_label": "DDoS attacks-LOIC-HTTP",
+        "normalized_source": "DDoS",
+        "predicted_class": "DDoS",
+        "match": true
+      },
+      {
+        "idx": 10,
+        "raw_label": "Bot",
+        "normalized_source": "Bot",
+        "predicted_class": "Bot",
+        "match": true
+      },
+      {
+        "idx": 11,
+        "raw_label": "Bot",
+        "normalized_source": "Bot",
+        "predicted_class": "Benign",
+        "match": false
+      },
+      {
+        "idx": 12,
+        "raw_label": "Bot",
+        "normalized_source": "Bot",
+        "predicted_class": "Benign",
+        "match": false
+      },
+      {
+        "idx": 13,
+        "raw_label": "FTP-BruteForce",
+        "normalized_source": "FTP-BruteForce",
+        "predicted_class": "FTP-BruteForce",
+        "match": true
+      },
+      {
+        "idx": 14,
+        "raw_label": "FTP-BruteForce",
+        "normalized_source": "FTP-BruteForce",
+        "predicted_class": "FTP-BruteForce",
+        "match": true
+      },
+      {
+        "idx": 15,
+        "raw_label": "FTP-BruteForce",
+        "normalized_source": "FTP-BruteForce",
+        "predicted_class": "FTP-BruteForce",
+        "match": true
+      },
+      {
+        "idx": 16,
+        "raw_label": "SSH-Bruteforce",
+        "normalized_source": "SSH-Bruteforce",
+        "predicted_class": "Benign",
+        "match": false
+      },
+      {
+        "idx": 17,
+        "raw_label": "SSH-Bruteforce",
+        "normalized_source": "SSH-Bruteforce",
+        "predicted_class": "Benign",
+        "match": false
+      },
+      {
+        "idx": 18,
+        "raw_label": "SSH-Bruteforce",
+        "normalized_source": "SSH-Bruteforce",
+        "predicted_class": "Benign",
+        "match": false
+      }
+    ]
+  },
+  "acceptance_criteria": {
+    "baseline_accuracy": {
+      "value": 0.998334,
+      "threshold": 0.995,
+      "pass": true
+    },
+    "baseline_min_f1": {
+      "values": {
+        "Benign": 0.997863,
+        "DoS": 0.999033,
+        "DDoS": 0.998502
+      },
+      "min_class": "Benign",
+      "min_value": 0.997863,
+      "threshold": 0.995,
+      "pass": true
+    },
+    "baseline_leakage": {
+      "value": 0.000111,
+      "threshold": 0.005,
+      "pass": true
+    },
+    "bot_recall": {
+      "value": 0.004333,
+      "threshold": 0.95,
+      "pass": false
+    },
+    "ssh_recall": {
+      "value": 0.002333,
+      "threshold": 0.95,
+      "pass": false
+    },
+    "ftp_recall_indicative": {
+      "value": 1.0,
+      "note": "FTP-BruteForce is indicative only - not a pass/fail criterion"
+    },
+    "overall_pass": false
+  }
+}
