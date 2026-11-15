@@ -70,13 +70,10 @@ def test_missing_metrics_produce_not_computed(tmp_path):
     """Ensure missing artifact files return 'not computed' for all pipeline fields."""
     mod = _load_tab_module()
     metrics = mod.collect_paper_vs_ours_metrics(tmp_path)
-    assert len(metrics) == 9
+    assert len(metrics) == 10
 
     for row in metrics:
-        if row["Metric"] in ["Retrieval Precision@5", "Retrieval Recall@5"]:
-            assert row["Ours"] == "not computed"
-        else:
-            assert row["Ours"] == "not computed"
+        assert row["Ours"] == "not computed"
         assert row["Paper"] != ""
         assert row["Note"] != ""
 
@@ -116,8 +113,40 @@ def test_present_metrics_populate_values(tmp_path):
     assert rows_by_metric["ROC AUC (DDoS)"]["Ours"] == "1.0000"
     assert rows_by_metric["Retrieval MRR"]["Ours"] == "0.75"
     assert "1.00 (2/2)" in rows_by_metric["Retrieval success rate"]["Ours"]
-    assert rows_by_metric["Retrieval Precision@5"]["Ours"] == "not computed"
-    assert rows_by_metric["Retrieval Recall@5"]["Ours"] == "not computed"
+    assert rows_by_metric["Retrieval Precision@5 (chunk-level)"]["Ours"] == "not computed"
+    assert rows_by_metric["Retrieval Recall@5 (chunk-level)"]["Ours"] == "not computed"
+    assert rows_by_metric["Retrieval Recall@5 (section-level)"]["Ours"] == "not computed"
+
+
+def test_present_retrieval_precision_recall_summary_populates_values(tmp_path):
+    """Ensure retrieval_precision_recall_at_5.json dynamically populates P@5, R@5, MRR and success."""
+    mod = _load_tab_module()
+    artifacts_dir = tmp_path / "artifacts"
+    artifacts_dir.mkdir()
+
+    summary_payload = {
+        "num_queries": 33,
+        "overall_metrics": {
+            "precision_at_5": 0.5394,
+            "recall_chunks_at_5": 0.4988,
+            "section_recall_at_5": 0.8177,
+            "mrr": 0.8924,
+            "top5_success_count": 32,
+            "top5_success_rate": 0.9697,
+        },
+    }
+    (artifacts_dir / "retrieval_precision_recall_at_5.json").write_text(
+        json.dumps(summary_payload), encoding="utf-8"
+    )
+
+    rows = mod.collect_paper_vs_ours_metrics(tmp_path)
+    rows_by_metric = {r["Metric"]: r for r in rows}
+
+    assert rows_by_metric["Retrieval Precision@5 (chunk-level)"]["Ours"] == "0.5394"
+    assert rows_by_metric["Retrieval Recall@5 (chunk-level)"]["Ours"] == "0.4988"
+    assert rows_by_metric["Retrieval Recall@5 (section-level)"]["Ours"] == "0.8177"
+    assert rows_by_metric["Retrieval MRR"]["Ours"] == "0.89"
+    assert rows_by_metric["Retrieval success rate"]["Ours"] == "0.97 (32/33)"
 
 
 def test_missing_mixed_confusion_summary_produces_not_computed(tmp_path):

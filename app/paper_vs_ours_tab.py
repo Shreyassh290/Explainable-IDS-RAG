@@ -33,29 +33,75 @@ def resolve_paper_image(paper_dir: Path, filename: str) -> Path | None:
     return None
 
 
-def load_retrieval_metrics(retrieval_json: Path) -> tuple[str, str]:
-    """Extract MRR and success rate from retrieval_eval.json if present."""
-    if not retrieval_json.is_file():
-        return "not computed", "not computed"
-    try:
-        with open(retrieval_json, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        rows = data.get("rows", [])
-        if not rows:
-            return "not computed", "not computed"
+def load_retrieval_metrics(
+    summary_json: Path | None = None,
+    fallback_eval_json: Path | None = None,
+) -> dict[str, str]:
+    """Extract retrieval evaluation metrics from retrieval_precision_recall_at_5.json.
 
-        rr_vals = [float(r["rr"]) for r in rows if "rr" in r]
-        succ_vals = [int(r["success"]) for r in rows if "success" in r]
+    Falls back to retrieval_eval.json if summary_json is absent or has an older structure.
+    Missing metrics default to 'not computed' without crashing.
+    """
+    res = {
+        "mrr": "not computed",
+        "success": "not computed",
+        "precision_chunk": "not computed",
+        "recall_chunk": "not computed",
+        "recall_section": "not computed",
+    }
 
-        mrr_str = f"{sum(rr_vals) / len(rr_vals):.2f}" if rr_vals else "not computed"
-        if succ_vals:
-            rate = sum(succ_vals) / len(succ_vals)
-            succ_str = f"{rate:.2f} ({sum(succ_vals)}/{len(succ_vals)})"
-        else:
-            succ_str = "not computed"
-        return mrr_str, succ_str
-    except Exception:
-        return "not computed", "not computed"
+    def _parse_file(p: Path | None) -> bool:
+        if not p or not p.is_file():
+            return False
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # Format 1: Latest retrieval_precision_recall_at_5.json with overall_metrics
+            if "overall_metrics" in data:
+                ov = data["overall_metrics"]
+                if "mrr" in ov:
+                    res["mrr"] = f"{float(ov['mrr']):.2f}"
+                if "top5_success_rate" in ov and "top5_success_count" in ov and "num_queries" in data:
+                    res["success"] = f"{float(ov['top5_success_rate']):.2f} ({int(ov['top5_success_count'])}/{int(data['num_queries'])})"
+                elif "top5_success_rate" in ov:
+                    res["success"] = f"{float(ov['top5_success_rate']):.2f}"
+                if "precision_at_5" in ov:
+                    res["precision_chunk"] = f"{float(ov['precision_at_5']):.4f}"
+                if "recall_chunks_at_5" in ov:
+                    res["recall_chunk"] = f"{float(ov['recall_chunks_at_5']):.4f}"
+                if "section_recall_at_5" in ov:
+                    res["recall_section"] = f"{float(ov['section_recall_at_5']):.4f}"
+                return True
+            # Format 2: retrieval_eval.json with rows
+            if "rows" in data:
+                rows = data.get("rows", [])
+                if rows:
+                    rr_vals = [float(r["rr"]) for r in rows if "rr" in r]
+                    succ_vals = [int(r["success"]) for r in rows if "success" in r]
+                    p5_vals = [float(r["p_at_5"]) for r in rows if "p_at_5" in r]
+                    r5_chunk_vals = [float(r["recall_chunks_at_5"]) for r in rows if "recall_chunks_at_5" in r]
+                    r5_sec_vals = [float(r["section_recall_at_5"]) for r in rows if "section_recall_at_5" in r]
+
+                    if rr_vals:
+                        res["mrr"] = f"{sum(rr_vals) / len(rr_vals):.2f}"
+                    if succ_vals:
+                        rate = sum(succ_vals) / len(succ_vals)
+                        res["success"] = f"{rate:.2f} ({sum(succ_vals)}/{len(succ_vals)})"
+                    if p5_vals:
+                        res["precision_chunk"] = f"{sum(p5_vals) / len(p5_vals):.4f}"
+                    if r5_chunk_vals:
+                        res["recall_chunk"] = f"{sum(r5_chunk_vals) / len(r5_chunk_vals):.4f}"
+                    if r5_sec_vals:
+                        res["recall_section"] = f"{sum(r5_sec_vals) / len(r5_sec_vals):.4f}"
+                    return True
+        except Exception:
+            pass
+        return False
+
+    if not _parse_file(summary_json):
+        _parse_file(fallback_eval_json)
+
+    return res
 
 
 def load_citation_rate(eval_dir: Path) -> str:
@@ -94,7 +140,8 @@ def collect_paper_vs_ours_metrics(repo_root: Path) -> list[dict[str, str]]:
     artifacts_dir = Path(repo_root) / "artifacts"
     metrics_json = artifacts_dir / "metrics.json"
     eval_dir = artifacts_dir / "eval"
-    retrieval_json = eval_dir / "retrieval_eval.json"
+    retrieval_summary_json = artifacts_dir / "retrieval_precision_recall_at_5.json"
+    retrieval_eval_json = eval_dir / "retrieval_eval.json"
 
     # Dynamic pipeline numbers default to 'not computed'
     ours_acc = "not computed"
@@ -120,7 +167,7 @@ def collect_paper_vs_ours_metrics(repo_root: Path) -> list[dict[str, str]]:
         except Exception:
             pass
 
-    ours_mrr, ours_succ = load_retrieval_metrics(retrieval_json)
+    ret_m = load_retrieval_metrics(retrieval_summary_json, fallback_eval_json=retrieval_eval_json)
     ours_cit = load_citation_rate(eval_dir)
 
     rows = [
@@ -151,26 +198,32 @@ def collect_paper_vs_ours_metrics(repo_root: Path) -> list[dict[str, str]]:
         {
             "Metric": "Retrieval MRR",
             "Paper": "0.87",
-            "Ours": ours_mrr,
+            "Ours": ret_m["mrr"],
             "Note": "Table VIII",
         },
         {
             "Metric": "Retrieval success rate",
             "Paper": "0.97 (32/33)",
-            "Ours": ours_succ,
+            "Ours": ret_m["success"],
             "Note": "Table VIII",
         },
         {
-            "Metric": "Retrieval Precision@5",
+            "Metric": "Retrieval Precision@5 (chunk-level)",
             "Paper": "0.91",
-            "Ours": "not computed",
+            "Ours": ret_m["precision_chunk"],
             "Note": "Table VIII",
         },
         {
-            "Metric": "Retrieval Recall@5",
+            "Metric": "Retrieval Recall@5 (chunk-level)",
             "Paper": "0.84",
-            "Ours": "not computed",
+            "Ours": ret_m["recall_chunk"],
             "Note": "Table VIII",
+        },
+        {
+            "Metric": "Retrieval Recall@5 (section-level)",
+            "Paper": "n/a (not reported)",
+            "Ours": ret_m["recall_section"],
+            "Note": "Table VIII / Section recall",
         },
         {
             "Metric": "Citations per explanation",
@@ -360,6 +413,11 @@ def render_paper_vs_ours_tab(repo_root: Path, is_v2: bool = False) -> None:
     table_data = collect_paper_vs_ours_metrics(repo_root)
     df_comp = pd.DataFrame(table_data)
     st.dataframe(df_comp, use_container_width=True, hide_index=True)
+    st.caption(
+        "Our gold labels are given by document section, so every chunk of a relevant section counts as relevant "
+        "(median 6 relevant chunks per query, up to 91). Chunk-level recall over 5 results therefore cannot reach "
+        "1.0 for most queries. Definitions may differ from the paper, so this is not a like-for-like comparison."
+    )
 
     st.markdown("---")
 
@@ -442,14 +500,17 @@ def render_paper_vs_ours_tab(repo_root: Path, is_v2: bool = False) -> None:
             st.info("Drop table8_retrieval.png into app/assets/paper/ to view side-by-side.")
     with col8:
         st.markdown("**Our Pipeline Retrieval Metrics**")
-        ours_mrr, ours_succ = load_retrieval_metrics(artifacts_dir / "eval" / "retrieval_eval.json")
+        p_ret = artifacts_dir / "retrieval_precision_recall_at_5.json"
+        fb_ret = artifacts_dir / "eval" / "retrieval_eval.json"
+        ret_m_card = load_retrieval_metrics(p_ret, fallback_eval_json=fb_ret)
         ours_cit = load_citation_rate(artifacts_dir / "eval")
         st.markdown(
-            f"- **Mean Reciprocal Rank (MRR):** `{ours_mrr}`\n"
-            f"- **Success Rate:** `{ours_succ}`\n"
+            f"- **Mean Reciprocal Rank (MRR):** `{ret_m_card['mrr']}`\n"
+            f"- **Success Rate:** `{ret_m_card['success']}`\n"
             f"- **Citations Per Explanation:** `{ours_cit}`\n"
-            f"- **Precision@5:** `not computed`\n"
-            f"- **Recall@5:** `not computed`"
+            f"- **Precision@5 (chunk-level):** `{ret_m_card['precision_chunk']}`\n"
+            f"- **Recall@5 (chunk-level):** `{ret_m_card['recall_chunk']}`\n"
+            f"- **Recall@5 (section-level):** `{ret_m_card['recall_section']}`"
         )
 
     st.markdown("---")
