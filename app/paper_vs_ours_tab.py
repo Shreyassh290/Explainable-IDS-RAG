@@ -194,8 +194,164 @@ def collect_v2_extension_data(repo_root: Path) -> dict[str, Any] | None:
         return None
 
 
-def render_paper_vs_ours_tab(repo_root: Path) -> None:
+def collect_mixed_confusion_recall(repo_root: Path) -> dict[str, Any]:
+    """Read per-class recall from final D5 gated results (eval_negfix_gated.json).
+
+    Falls back to the old mixed_confusion_summary.json only if the gated file is absent,
+    and in that case marks every value with a [PRE-GATING] warning prefix.
+    """
+    all_classes = ["Benign", "DoS", "DDoS", "Bot", "FTP-BruteForce", "SSH-Bruteforce"]
+    default_recalls: dict[str, Any] = {c: "not computed" for c in all_classes}
+
+    # Preferred: D5 gated source of truth
+    gated_path = Path(repo_root) / "artifacts" / "v2b" / "eval" / "eval_negfix_gated.json"
+    if gated_path.is_file():
+        try:
+            with open(gated_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            per_class = data["gated_with_ftp"]["mixed_sample_15008"]["per_class_metrics"]
+            res: dict[str, Any] = {}
+            for c in all_classes:
+                if c in per_class and "recall" in per_class[c]:
+                    pct = f"{float(per_class[c]['recall']) * 100:.2f}%"
+                    if per_class[c].get("is_indicative_only"):
+                        pct += " (indicative only — 8 test flows)"
+                    res[c] = pct
+                else:
+                    res[c] = "not computed"
+            res["_source"] = "D5 gated — artifacts/v2b/eval/eval_negfix_gated.json"
+            return res
+        except Exception:
+            pass
+
+    # Fallback: old pre-gating summary (clearly labelled)
+    summary_path = Path(repo_root) / "artifacts" / "v2" / "mixed_check" / "mixed_confusion_summary.json"
+    if summary_path.is_file():
+        try:
+            with open(summary_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            per_class = data.get("per_class_metrics", {})
+            res = {}
+            for c in all_classes:
+                if c in per_class and "recall" in per_class[c]:
+                    res[c] = f"[PRE-GATING] {float(per_class[c]['recall']) * 100:.2f}%"
+                else:
+                    res[c] = "not computed"
+            res["_source"] = "[PRE-GATING] artifacts/v2/mixed_check/mixed_confusion_summary.json"
+            return res
+        except Exception:
+            pass
+
+    return default_recalls
+
+
+def render_paper_vs_ours_tab(repo_root: Path, is_v2: bool = False) -> None:
     """Render the Paper vs Ours comparison dashboard."""
+    artifacts_dir = Path(repo_root) / "artifacts"
+    v2_plots_dir = artifacts_dir / "v2" / "plots"
+
+    if is_v2:
+        st.header("V2 Extra Classes Evaluation — Final Gated Results")
+        st.caption(
+            "Source of truth: artifacts/v2b/eval/eval_negfix_gated.json "
+            "(D5 gated decision rule, threshold 0.5 fixed, not tuned on test data)."
+        )
+
+        st.success(
+            "Extra-class models were retrained with baseline classes as negatives and evaluated "
+            "jointly with baseline models using the gated decision rule. "
+            "Bot recall: 99.87% | SSH recall: 100.00% | Baseline leakage: 0.14% | All 5 acceptance criteria: PASS."
+        )
+
+        st.subheader("Six-Class Gated Decision Rule (Final D5)")
+        st.caption("15,008-flow mixed test sample: 3,000 per baseline class + extra classes (FTP: 8 flows).")
+        c1, c2 = st.columns(2)
+        with c1:
+            img_cm_gated = v2_plots_dir / "v2_mixed_confusion_gated.png"
+            if img_cm_gated.is_file():
+                st.image(str(img_cm_gated), caption="After fix: retrained + gated decision rule (D5, with FTP)", use_container_width=True)
+            else:
+                st.info("Missing artifacts/v2/plots/v2_mixed_confusion_gated.png — run scripts/make_v2_gated_plots.py")
+        with c2:
+            img_rec_gated = v2_plots_dir / "v2_mixed_recall_gated.png"
+            if img_rec_gated.is_file():
+                st.image(str(img_rec_gated), caption="After fix: retrained + gated decision rule (D5, with FTP)", use_container_width=True)
+            else:
+                st.info("Missing artifacts/v2/plots/v2_mixed_recall_gated.png — run scripts/make_v2_gated_plots.py")
+
+        st.subheader("One-vs-Rest Extra Classes Evaluation")
+        c3, c4 = st.columns(2)
+        with c3:
+            img_roc = v2_plots_dir / "v2_roc_ovr.png"
+            if img_roc.is_file():
+                st.image(str(img_roc), use_container_width=True)
+            else:
+                st.info("Missing artifacts/v2/plots/v2_roc_ovr.png")
+        with c4:
+            img_crv = v2_plots_dir / "v2_training_curves.png"
+            if img_crv.is_file():
+                st.image(str(img_crv), use_container_width=True)
+            else:
+                st.info("Missing artifacts/v2/plots/v2_training_curves.png")
+
+        v2_data = collect_v2_extension_data(repo_root)
+        if v2_data:
+            per_class = v2_data.get("per_class", {})
+            table_rows = []
+            for cname in ["Bot", "FTP-BruteForce", "SSH-Bruteforce"]:
+                cdata = per_class.get(cname, {})
+                pos_cnt = cdata.get("n_pos_test", 0)
+                note = "indicative only (8 test positives)" if cname == "FTP-BruteForce" else "Standard evaluation"
+                acc_val = f"{cdata.get('accuracy', 0.0)*100:.2f}%" if "accuracy" in cdata else "not computed"
+                roc_val = f"{cdata.get('val_roc_auc', 0.0):.4f}" if "val_roc_auc" in cdata else "not computed"
+                f1_val = f"{cdata.get('macro_f1', 0.0):.4f}" if "macro_f1" in cdata else "not computed"
+
+                table_rows.append({
+                    "Threat Category": cname,
+                    "Test Positives": pos_cnt,
+                    "Accuracy": acc_val,
+                    "Validation ROC-AUC": roc_val,
+                    "Macro F1": f1_val,
+                    "Status": note,
+                })
+            st.caption("One-vs-rest metrics (extra-class test set only, not the mixed check):")
+            st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
+        else:
+            st.info("artifacts/v2/eval/eval_summary_v2.json not found; extra classes metrics not computed.")
+
+        st.warning("FTP-BruteForce is indicative only (8 test positives).")
+
+        st.markdown("#### Final Gated Recall (D5, 15,008-flow mixed sample)")
+        mixed_recalls = collect_mixed_confusion_recall(repo_root)
+        source_note = mixed_recalls.pop("_source", "")
+        mixed_table = [
+            {"Threat Category": c, "Final Gated Recall": mixed_recalls[c]}
+            for c in ["Benign", "DoS", "DDoS", "Bot", "FTP-BruteForce", "SSH-Bruteforce"]
+        ]
+        st.dataframe(pd.DataFrame(mixed_table), use_container_width=True, hide_index=True)
+        if source_note:
+            st.caption(f"Source: {source_note}")
+
+        with st.expander("Historical: Pre-gating mixed six-class results (plain argmax, independent networks)", expanded=False):
+            st.warning(
+                "These are PRE-FIX results before retraining and gating. "
+                "Bot recall was ~0.93%, SSH recall was ~0.23%. Shown for reference only."
+            )
+            c_h1, c_h2 = st.columns(2)
+            with c_h1:
+                img_cm_hist = v2_plots_dir / "v2_mixed_confusion.png"
+                if img_cm_hist.is_file():
+                    st.image(str(img_cm_hist), caption="Before fix (plain argmax, independent networks)", use_container_width=True)
+                else:
+                    st.info("Historical confusion matrix not found.")
+            with c_h2:
+                img_rec_hist = v2_plots_dir / "v2_mixed_recall.png"
+                if img_rec_hist.is_file():
+                    st.image(str(img_rec_hist), caption="Before fix (plain argmax, independent networks)", use_container_width=True)
+                else:
+                    st.info("Historical recall chart not found.")
+        return
+
     st.header("Comparative Analysis: Reference Paper vs Our Pipeline")
     st.caption("Benchmark fidelity review across neural detection, retrieval metrics, and training trajectories.")
 
@@ -210,7 +366,6 @@ def render_paper_vs_ours_tab(repo_root: Path) -> None:
     # 2. Side-by-Side Visual Comparison
     st.subheader("2. Side-by-Side Visual Comparison")
     paper_dir = Path(repo_root) / "app" / "assets" / "paper"
-    artifacts_dir = Path(repo_root) / "artifacts"
 
     # Row 1: Fig. 2 ROC Curves
     st.markdown("#### Row 1: ROC Curves (CICIDS2018)")
@@ -244,13 +399,13 @@ def render_paper_vs_ours_tab(repo_root: Path) -> None:
         else:
             st.info("Drop fig4_val_accuracy.png into app/assets/paper/ to view side-by-side.")
     with col4:
-        st.markdown("**Our Pipeline (artifacts/training_curves_DoS.png)**")
-        img_o2 = artifacts_dir / "training_curves_DoS.png"
+        st.markdown("**Our Pipeline (artifacts/paper_style/fig4_style_val.png)**")
+        img_o2 = artifacts_dir / "paper_style" / "fig4_style_val.png"
         if img_o2.is_file():
             st.image(str(img_o2), use_container_width=True)
         else:
-            st.info("Missing artifacts/training_curves_DoS.png")
-    st.caption("The paper's panel shows a best validation accuracy of 100.11%, which is not a valid accuracy; do not treat it as a benchmark.")
+            st.info("Missing artifacts/paper_style/fig4_style_val.png")
+    st.caption("The paper's panel shows a best validation accuracy of 100.11%, which is not a valid accuracy; do not treat it as a benchmark. Epoch counts and loss definitions differ (ours: class-weighted loss, best epoch by validation macro F1).")
 
     st.markdown("---")
 
@@ -265,12 +420,13 @@ def render_paper_vs_ours_tab(repo_root: Path) -> None:
         else:
             st.info("Drop fig5_loss.png into app/assets/paper/ to view side-by-side.")
     with col6:
-        st.markdown("**Our Pipeline (artifacts/training_curves_DoS.png)**")
-        if img_o2.is_file():
-            st.image(str(img_o2), use_container_width=True)
+        st.markdown("**Our Pipeline (artifacts/paper_style/fig5_style_loss.png)**")
+        img_o3 = artifacts_dir / "paper_style" / "fig5_style_loss.png"
+        if img_o3.is_file():
+            st.image(str(img_o3), use_container_width=True)
         else:
-            st.info("Missing artifacts/training_curves_DoS.png")
-    st.caption("Epoch counts differ between the two runs.")
+            st.info("Missing artifacts/paper_style/fig5_style_loss.png")
+    st.caption("Epoch counts and loss definitions differ (ours: class-weighted loss, best epoch by validation macro F1).")
 
     st.markdown("---")
 
@@ -300,15 +456,25 @@ def render_paper_vs_ours_tab(repo_root: Path) -> None:
 
     # 3. Narrative Note on Benign Curve
     st.subheader("3. Model Training Notes")
-    st.info("Our original Benign training history was lost when that model was retrained; predictions were verified identical.")
+    st.info("Our original Benign training history was lost when that model was retrained; predictions were confirmed identical.")
 
     st.markdown("---")
 
     # 4. Extension: Extra Classes (v2)
-    st.subheader("4. Extension: Extra Classes (v2)")
+    st.subheader("4. Extension: Extra Classes (v2) — Final Gated Results")
     st.markdown(
         "The reference publication evaluated only 3 classes (Benign, DoS, DDoS). "
         "Our pipeline extends detection to 3 additional threat categories: **Bot**, **FTP-BruteForce**, and **SSH-Bruteforce**."
+    )
+
+    st.success(
+        "Extra-class models were retrained with baseline classes as negatives and evaluated jointly "
+        "using the gated decision rule (D5). "
+        "Bot recall: **99.87%** | SSH recall: **100.00%** | Baseline leakage: **0.14%** | All 5 acceptance criteria: **PASS**."
+    )
+    st.caption(
+        "Source: D5 gated — artifacts/v2b/eval/eval_negfix_gated.json. "
+        "15,008-flow mixed test sample, threshold 0.5 fixed (not tuned on test data)."
     )
 
     v2_data = collect_v2_extension_data(repo_root)
@@ -327,13 +493,28 @@ def render_paper_vs_ours_tab(repo_root: Path) -> None:
                 "Threat Category": cname,
                 "Test Positives": pos_cnt,
                 "Accuracy": acc_val,
-                "ROC-AUC": roc_val,
+                "Validation ROC-AUC": roc_val,
                 "Macro F1": f1_val,
                 "Status": note,
             })
+        st.caption("One-vs-rest metrics (extra-class test set only, not the mixed check):")
         st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
     else:
         st.info("artifacts/v2/eval/eval_summary_v2.json not found; extra classes metrics not computed.")
 
     st.warning("FTP-BruteForce is indicative only (8 test positives).")
+
+    # Final Gated Recall (D5) — replaces old "Mixed Six-Class Check Recall"
+    st.markdown("#### Final Gated Recall (D5, 15,008-flow mixed sample)")
+    mixed_recalls = collect_mixed_confusion_recall(repo_root)
+    source_note = mixed_recalls.pop("_source", "")
+    mixed_table = [
+        {"Threat Category": c, "Final Gated Recall": mixed_recalls.get(c, "not computed")}
+        for c in ["Benign", "DoS", "DDoS", "Bot", "FTP-BruteForce", "SSH-Bruteforce"]
+    ]
+    st.dataframe(pd.DataFrame(mixed_table), use_container_width=True, hide_index=True)
+    if source_note:
+        st.caption(f"Source: {source_note}")
+    elif all(v == "not computed" for v in mixed_recalls.values()):
+        st.info("Gated evaluation JSON not found. See artifacts/v2b/eval/eval_negfix_gated.json for final numbers.")
 

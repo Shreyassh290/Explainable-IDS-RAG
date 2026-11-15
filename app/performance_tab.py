@@ -105,28 +105,69 @@ def collect_performance_assets(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def load_gated_metrics(gated_json: Path) -> dict[str, Any] | None:
+    """Read final D5 gated per-class recalls from eval_negfix_gated.json."""
+    try:
+        with open(gated_json, encoding="utf-8") as f:
+            data = json.load(f)
+        mixed = data["gated_with_ftp"]["mixed_sample_15008"]
+        per_class = mixed["per_class_metrics"]
+        leakage = mixed["baseline_leakage_to_extra"]
+        full_bl = data["gated_with_ftp"]["full_baseline_test_119454"]
+        criteria = data["gated_with_ftp"]["acceptance_criteria"]
+        return {
+            "per_class": per_class,
+            "leakage_rate": leakage["leakage_rate"],
+            "full_baseline_accuracy": full_bl["accuracy"],
+            "baseline_per_class": full_bl["per_class"],
+            "criteria": criteria,
+        }
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
 def collect_v2_performance_assets(repo_root: Path) -> dict[str, Any]:
     """Describe graphs and metrics for v2 extra classes."""
-    v2_eval_dir = Path(repo_root) / "artifacts" / "v2" / "eval"
-    v2_train_dir = Path(repo_root) / "artifacts" / "v2" / "training"
-
-    curves = []
-    cms = []
-    for cls in CLASSES_V2:
-        caption = f"{cls} classifier: training and validation curves."
-        if cls == "FTP-BruteForce":
-            caption += " [INDICATIVE ONLY - N=53 unique flows]"
-        curves.append(_item(v2_train_dir, f"training_curves_v2_{cls}.png", caption))
-
-        cm_caption = f"Confusion matrix for {cls} on test set."
-        if cls == "FTP-BruteForce":
-            cm_caption += " [INDICATIVE ONLY]"
-        cms.append(_item(v2_eval_dir, f"confusion_matrix_v2_{cls}.png", cm_caption))
+    artifacts_dir = Path(repo_root) / "artifacts"
+    v2_eval_dir = artifacts_dir / "v2" / "eval"
+    v2_plots_dir = artifacts_dir / "v2" / "plots"
+    v2b_eval_dir = artifacts_dir / "v2b" / "eval"
 
     return {
-        "confusion_matrices": cms,
-        "curves": curves,
+        # Gated (final D5) images — source of truth
+        "mixed_confusion_gated": _item(
+            v2_plots_dir,
+            "v2_mixed_confusion_gated.png",
+            "Six-class gated decision rule — confusion matrix (D5, 15,008-flow mixed test sample).",
+        ),
+        "mixed_recall_gated": _item(
+            v2_plots_dir,
+            "v2_mixed_recall_gated.png",
+            "Six-class gated decision rule — per-class recall (D5, 15,008-flow mixed test sample).",
+        ),
+        # Historical pre-gating images (kept, labelled clearly)
+        "mixed_confusion_historical": _item(
+            v2_plots_dir,
+            "v2_mixed_confusion.png",
+            "PRE-GATING (historical): plain argmax, independent networks — do NOT use as final result.",
+        ),
+        "mixed_recall_historical": _item(
+            v2_plots_dir,
+            "v2_mixed_recall.png",
+            "PRE-GATING (historical): plain argmax, independent networks — do NOT use as final result.",
+        ),
+        "roc_ovr": _item(
+            v2_plots_dir,
+            "v2_roc_ovr.png",
+            "One-vs-rest ROC curves on test set containing only the new classes.",
+        ),
+        "training_curves": _item(
+            v2_plots_dir,
+            "v2_training_curves.png",
+            "Training and validation loss curves for extra classes.",
+        ),
         "metrics": load_v2_headline_metrics(v2_eval_dir / "eval_summary_v2.json"),
+        "gated_metrics": load_gated_metrics(v2b_eval_dir / "eval_negfix_gated.json"),
     }
 
 
@@ -166,12 +207,13 @@ def render_comparison_expander(st: Any, repo_root: Path, accuracy_str: str) -> N
         )
 
 
-def render_performance_tab(repo_root: Path) -> None:
+def render_performance_tab(repo_root: Path, is_v2: bool = False) -> None:
     import streamlit as st
 
     version = st.radio(
         "Select Performance View:",
         ["v1 (Baseline: Benign, DoS, DDoS)", "v2 (Extra Classes: Bot, FTP-BruteForce, SSH-Bruteforce)"],
+        index=1 if is_v2 else 0,
         horizontal=True,
     )
 
@@ -206,19 +248,84 @@ def render_performance_tab(repo_root: Path) -> None:
         render_comparison_expander(st, repo_root, ours_acc)
 
     else:
-        # V2 Performance View
+        # V2 Performance View (Our detection only - no paper comparison)
         assets_v2 = collect_v2_performance_assets(repo_root)
         m2 = assets_v2["metrics"]
+        gm = assets_v2["gated_metrics"]
 
-        st.subheader("V2 Extra Classes Model Performance (CICIDS2018 Extension)")
-        if m2 is None:
-            st.warning("artifacts/v2/eval/eval_summary_v2.json is missing or unreadable.")
+        st.subheader("V2 Six-Class Gated Decision Rule — Final Results")
+        st.caption(
+            "Source: D5 gated evaluation — artifacts/v2b/eval/eval_negfix_gated.json. "
+            "15,008-flow mixed test sample (3,000 per baseline class + extra classes). "
+            "Threshold: 0.5 fixed (not tuned on test data)."
+        )
+
+        if gm is not None:
+            # Headline gated metrics
+            g1, g2, g3 = st.columns(3)
+            g1.metric("Full Baseline Accuracy (119,454 flows)", f"{gm['full_baseline_accuracy']*100:.4f}%")
+            g2.metric("Baseline Leakage into Extra Classes", f"{gm['leakage_rate']*100:.4f}%")
+            g3.metric("Acceptance Criteria", "5/5 PASS" if gm["criteria"].get("overall_pass") else "FAIL")
+
+            # Per-class gated recall table
+            pc = gm["per_class"]
+            recall_rows = []
+            for cls in ["Benign", "DoS", "DDoS", "Bot", "FTP-BruteForce", "SSH-Bruteforce"]:
+                entry = pc.get(cls, {})
+                recall_pct = f"{entry['recall']*100:.2f}%" if "recall" in entry else "n/a"
+                note = "indicative only — 8 test flows" if entry.get("is_indicative_only") else ""
+                recall_rows.append({"Class": cls, "Recall (D5 Gated)": recall_pct, "Note": note})
+            import pandas as pd
+            st.dataframe(pd.DataFrame(recall_rows), use_container_width=True, hide_index=True)
+            st.caption(
+                "FTP-BruteForce recall is indicative only: only 8 positive test flows exist. "
+                "All other values are from the final D5 gated evaluation."
+            )
         else:
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Reliable Mean Macro F1", f"{m2['reliable_f1']:.6f}")
-            c2.metric("Reliable Mean ROC-AUC", f"{m2['reliable_roc_auc']:.4f}")
-            c3.metric("Test Evaluation Flows", f"{m2['test_rows']:,}")
+            st.warning(
+                "Final gated results not found (artifacts/v2b/eval/eval_negfix_gated.json). "
+                "Bot recall: 99.87%, SSH recall: 100.00%, baseline accuracy: 99.71%, leakage: 0.14%."
+            )
 
+        st.markdown("---")
+
+        # 1. Gated Confusion Matrix and Recall (final D5)
+        st.subheader("Gated Evaluation — Confusion Matrix and Recall")
+        st.caption("After fix: retrained extra-class models + gated decision rule (D5, with FTP).")
+        c_mix1, c_mix2 = st.columns(2)
+        with c_mix1:
+            _show(st, assets_v2["mixed_confusion_gated"])
+        with c_mix2:
+            _show(st, assets_v2["mixed_recall_gated"])
+
+        st.markdown("---")
+
+        # 2. Historical pre-gating results (clearly labelled)
+        with st.expander("Historical: Pre-gating results (plain argmax, independent networks) — do NOT use as final result", expanded=False):
+            st.warning(
+                "These are the PRE-FIX results from before retraining and gating. "
+                "Bot recall was ~0.93%, SSH recall was ~0.23% because extra-class models were "
+                "trained without baseline negatives. Shown for historical reference only."
+            )
+            c_h1, c_h2 = st.columns(2)
+            with c_h1:
+                _show(st, assets_v2["mixed_confusion_historical"])
+            with c_h2:
+                _show(st, assets_v2["mixed_recall_historical"])
+
+        st.markdown("---")
+
+        # 3. One-vs-Rest Evaluation (extra-class models only)
+        st.subheader("One-vs-Rest Extra Classes Evaluation (extra-class test set only)")
+        st.caption("These ROC curves are from the extra-class-only test set, not the mixed check.")
+        c_ovr1, c_ovr2 = st.columns(2)
+        with c_ovr1:
+            _show(st, assets_v2["roc_ovr"])
+        with c_ovr2:
+            _show(st, assets_v2["training_curves"])
+
+        # 4. One-vs-rest headline F1 metrics (pre-gating, extra-class-only test set)
+        if m2 is not None:
             per_cls = m2.get("per_class", {})
             f1_parts = []
             for c in CLASSES_V2:
@@ -228,42 +335,4 @@ def render_performance_tab(repo_root: Path) -> None:
                     f1_parts.append(f"{c} {f1_val:.4f} [INDICATIVE]")
                 else:
                     f1_parts.append(f"{c} {f1_val:.4f}")
-            st.caption("F1 per class: " + ", ".join(f1_parts))
-
-            st.warning(
-                "Data Quality Notice: FTP-BruteForce evaluation is marked INDICATIVE ONLY "
-                "due to severe deduplication reduction in CICIDS2018 (193,354 raw duplicate rows "
-                "collapsed to 53 unique flows; 8 test flows). Bot and SSH-Bruteforce models "
-                "are fully validated (Macro F1 = 1.0000 and 0.9999)."
-            )
-
-        st.subheader("Confusion Matrices (Test Set)")
-        cols_cm = st.columns(3)
-        for col, item in zip(cols_cm, assets_v2["confusion_matrices"]):
-            with col:
-                _show(st, item)
-
-        st.subheader("Training Curves")
-        cols_crv = st.columns(3)
-        for col, item in zip(cols_crv, assets_v2["curves"]):
-            with col:
-                _show(st, item)
-
-        # Check if dedicated UNSW-NB15 metrics exist to show alongside
-        unsw_m = load_unsw_metrics(Path(repo_root) / "artifacts" / "v2" / "unsw_eval" / "unsw_metrics.json")
-        if unsw_m is not None:
-            st.markdown("---")
-            st.subheader("UNSW-NB15 Benchmark Model Performance")
-            c1_u, c2_u, c3_u = st.columns(3)
-            c1_u.metric("UNSW Test Accuracy", f"{100 * unsw_m['test_accuracy']:.2f}%")
-            c1_u.caption(f"Validation Acc: {100 * unsw_m.get('validation_accuracy', 0.0):.2f}%")
-            c2_u.metric("UNSW Macro F1", f"{unsw_m['macro_f1']:.4f}")
-            c2_u.caption(f"ROC-AUC: {unsw_m.get('roc_auc', 0.0):.4f}")
-            c3_u.metric("Benign FPR", f"{100 * unsw_m.get('benign_fpr', 0.0):.2f}%")
-            c3_u.caption(f"Test Flows: {unsw_m['test_flows_total']:,}")
-            st.caption(
-                f"Reference Paper Benchmark: {100 * unsw_m['paper_comparison']['paper_accuracy']:.2f}% | "
-                f"Calibrated Threshold (tau): {unsw_m.get('optimal_threshold', 0.5):.4f}"
-            )
-
-        render_comparison_expander(st, repo_root, "99.84% (Baseline) / 99.99% (v2 Reliable)")
+            st.caption("One-vs-rest macro F1 (extra-class test set only): " + ", ".join(f1_parts))
